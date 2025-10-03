@@ -32,6 +32,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     'testserver'
 ]
+CSRF_TRUSTED_ORIGINS = ['https://verses1-4.onrender.com']
 
 
 
