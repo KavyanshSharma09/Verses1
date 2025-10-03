@@ -33,7 +33,12 @@ ALLOWED_HOSTS = [
     'testserver'
 ]
 CSRF_TRUSTED_ORIGINS = ['https://verses1-4.onrender.com']
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'   # this is important
 
+# If you also have media uploads
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 # Application definition
