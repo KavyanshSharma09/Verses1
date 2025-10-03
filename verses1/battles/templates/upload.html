@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Upload Code - verses1{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-4">
+                <h3 class="card-title text-center mb-4">📤 Upload Your Python Code</h3>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ form.file.label_tag }}
+                        {{ form.file }}
+                        {% if form.file.errors %}
+                            <div class="invalid-feedback d-block">{{ form.file.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Upload</button>
+                </form>
+                <div class="mt-3 text-center">
+                    <a href="{% url 'file_list' %}" class="text-decoration-none">View Uploaded Files ➡️</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

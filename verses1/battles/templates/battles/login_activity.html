@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Login Activity - verses1{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="card p-4">
+        <h3>Recent Login Activity</h3>
+        <p class="small-muted">Showing the most recent 200 login events.</p>
+        <div class="table-responsive mt-3">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Timestamp</th>
+                        <th>IP Address</th>
+                        <th>User Agent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in activities %}
+                    <tr>
+                        <td>{{ a.user.username }}</td>
+                        <td>{{ a.timestamp }}</td>
+                        <td>{{ a.ip_address|default:'-' }}</td>
+                        <td><small class="text-muted">{{ a.user_agent }}</small></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center">No login activity recorded yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

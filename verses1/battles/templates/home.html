@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to verses1{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <h1 class="display-4 mb-4">Welcome to verses1</h1>
+            <p class="lead mb-5">Challenge other coders in 1v1 battles! Submit your code and let our system analyze complexity, performance, and readability.</p>
+            
+            {% if user.is_authenticated %}
+                <div class="row mb-5">
+                    <div class="col-md-6">
+                        <div class="card battle-card p-4 mb-4">
+                            <h3>Create Battle</h3>
+                            <p>Start a new coding challenge and invite others to compete.</p>
+                            <a href="{% url 'create_battle' %}" class="btn btn-primary">Create Battle</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card battle-card p-4 mb-4">
+                            <h3>Join Battle</h3>
+                            <p>Join an existing battle using a battle code.</p>
+                            <a href="{% url 'join_battle' %}" class="btn btn-primary">Join Battle</a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card p-4 mb-5">
+                    <h2 class="mb-4">Get Started</h2>
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <a href="{% url 'register' %}" class="btn btn-primary btn-lg btn-block mb-3">Register</a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg btn-block">Login</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="row mt-5">
+                <div class="col-md-4">
+                    <div class="card p-4">
+                        <h3>Code Analysis</h3>
+                        <p>We analyze your code's complexity using advanced metrics.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4">
+                        <h3>Performance</h3>
+                        <p>Your code is tested for execution time and efficiency.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4">
+                        <h3>Readability</h3>
+                        <p>Get scored on code style and readability standards.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

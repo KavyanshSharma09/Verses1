@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Battle Detail - verses1{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow mb-4 fade-in">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="text-start mb-0">Battle Code: <span class="code-badge">{{ battle.battle_code }}</span></h2>
+                <div>
+                    <button type="button" class="btn btn-outline-secondary btn-sm copy-battle-code" data-code="{{ battle.battle_code }}">Copy</button>
+                </div>
+            </div>
+            <hr class="my-3" />
+            <div id="battle-status" class="mb-3 small-muted">Waiting for opponent...</div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>Creator: {{ battle.creator.username }}</h4>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h4>Opponent: {{ battle.opponent.username|default:"Waiting..." }}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if not battle.is_completed %}
+        {% if battle.opponent and user == battle.creator or battle.opponent and user == battle.opponent %}
+            {% if not user_has_submitted %}
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h3 class="mb-4">Submit Your Code</h3>
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{ form.as_p }}
+                            <button type="submit" class="btn btn-primary">Submit Code</button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info mt-3">
+                    You've already submitted your code. Waiting for opponent...
+                </div>
+            {% endif %}
+        {% elif not battle.opponent %}
+            <div class="alert alert-warning mt-3">
+                Waiting for opponent to join...
+                <div class="mt-2">
+                    Share this code with your opponent: <strong>{{ battle.battle_code }}</strong>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+
+    {% if submissions %}
+        <div class="card shadow mt-4">
+            <div class="card-body">
+                <h3 class="mb-4">Submissions</h3>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Submitted At</th>
+                                <th>File</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for submission in submissions %}
+                            <tr>
+                                <td>{{ submission.user.username }}</td>
+                                <td>{{ submission.submitted_at }}</td>
+                                <td>{{ submission.code_file.name }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Battle Result - verses1{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="card shadow">
+        <div class="card-body">
+            <h2 class="text-center mb-4">Battle Results</h2>
+            {% if result.is_draw %}
+            <div class="alert alert-info text-center">
+                <h3 class="mb-0">🤝 Draw — both submissions scored the same</h3>
+            </div>
+            {% else %}
+                {% if user.is_authenticated and user == battle.winner %}
+                <div class="alert alert-success text-center">
+                    <h3 class="mb-0">🎉 You win! 🏆</h3>
+                    <p class="small-muted mb-0">Winner: {{ battle.winner.username }}</p>
+                </div>
+                {% else %}
+                <div class="alert alert-danger text-center">
+                    <h3 class="mb-0">😞 You lost</h3>
+                    <p class="small-muted mb-0">Winner: {{ battle.winner.username }}</p>
+                </div>
+                {% endif %}
+            {% endif %}
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h4 class="card-title">Complexity Analysis</h4>
+                            <p class="card-text">{{ result.complexity_comparison|linebreaks }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h4 class="card-title">Performance Analysis</h4>
+                            <p class="card-text">{{ result.performance_comparison|linebreaks }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h4 class="card-title">Readability Analysis</h4>
+                            <p class="card-text">{{ result.readability_comparison|linebreaks }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive mt-4">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>{% if result.winner_submission %}{{ result.winner_submission.user.username }}{% else %}{{ battle.submissions.all.0.user.username }}{% endif %}</th>
+                            <th>{% if result.loser_submission %}{{ result.loser_submission.user.username }}{% else %}{{ battle.submissions.all.1.user.username }}{% endif %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Complexity Score</td>
+                            <td>{% if result.winner_submission %}{{ result.winner_submission.complexity_score|floatformat:2 }}{% else %}{{ battle.submissions.all.0.complexity_score|floatformat:2 }}{% endif %}</td>
+                            <td>{% if result.loser_submission %}{{ result.loser_submission.complexity_score|floatformat:2 }}{% else %}{{ battle.submissions.all.1.complexity_score|floatformat:2 }}{% endif %}</td>
+                        </tr>
+                        <tr>
+                            <td>Performance Score</td>
+                            <td>{% if result.winner_submission %}{{ result.winner_submission.performance_score|floatformat:2 }}{% else %}{{ battle.submissions.all.0.performance_score|floatformat:2 }}{% endif %}</td>
+                            <td>{% if result.loser_submission %}{{ result.loser_submission.performance_score|floatformat:2 }}{% else %}{{ battle.submissions.all.1.performance_score|floatformat:2 }}{% endif %}</td>
+                        </tr>
+                        <tr>
+                            <td>Readability Score</td>
+                            <td>{% if result.winner_submission %}{{ result.winner_submission.readability_score|floatformat:2 }}{% else %}{{ battle.submissions.all.0.readability_score|floatformat:2 }}{% endif %}</td>
+                            <td>{% if result.loser_submission %}{{ result.loser_submission.readability_score|floatformat:2 }}{% else %}{{ battle.submissions.all.1.readability_score|floatformat:2 }}{% endif %}</td>
+                        </tr>
+                        <tr class="table-primary">
+                            <td><strong>Total Score</strong></td>
+                            <td><strong>{% if result.winner_submission %}{{ result.winner_submission.total_score|floatformat:2 }}{% else %}{{ battle.submissions.all.0.total_score|floatformat:2 }}{% endif %}</strong></td>
+                            <td><strong>{% if result.loser_submission %}{{ result.loser_submission.total_score|floatformat:2 }}{% else %}{{ battle.submissions.all.1.total_score|floatformat:2 }}{% endif %}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="text-center mt-4">
+                <a href="{% url 'battle_history' %}" class="btn btn-primary">View Battle History</a>
+                <a href="{% url 'create_battle' %}" class="btn btn-outline-primary ms-2">Start New Battle</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
