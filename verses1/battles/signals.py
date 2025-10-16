@@ -5,7 +5,6 @@ from .models import LoginActivity
 
 @receiver(user_logged_in)
 def record_login(sender, user, request, **kwargs):
-    # Attempt to get IP address from common headers
     ip = None
     x_forwarded = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded:
