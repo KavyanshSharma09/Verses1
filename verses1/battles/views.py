@@ -61,8 +61,6 @@ def battle_detail(request, battle_id):
             submission = form.save(commit=False)
             submission.battle = battle
             submission.user = request.user
-            
-            # Analyze the code
             code_content = submission.code_file.read().decode('utf-8')
             submission.complexity_score = utils.analyze_code_complexity(code_content)
             submission.performance_score = utils.analyze_code_performance(code_content)
@@ -73,19 +71,15 @@ def battle_detail(request, battle_id):
                 submission.readability_score
             )
             submission.save()
-            
-            # Check if both submissions are in
             if battle.submissions.count() == 2:
                 submissions = battle.submissions.all()
                 sub1, sub2 = submissions[0], submissions[1]
-                
-                # Determine winner or draw
                 import math
                 comparisons = utils.compare_submissions(sub1, sub2)
                 a = float(sub1.total_score or 0)
                 b = float(sub2.total_score or 0)
                 if math.isclose(a, b, rel_tol=1e-9, abs_tol=1e-9):
-                    # It's a draw
+                    
                     result = BattleResult.objects.create(
                         battle=battle,
                         winner_submission=None,
@@ -151,7 +145,7 @@ def battle_history(request):
     user_battles = Battle.objects.filter(is_completed=True).filter(
         models.Q(creator=request.user) | models.Q(opponent=request.user)
     ).order_by('-created_at')
-    # Attach result object when present so template can show draws
+    
     battle_rows = []
     for b in user_battles:
         try:
