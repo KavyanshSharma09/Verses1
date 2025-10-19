@@ -6,8 +6,7 @@ class BattlesConfig(AppConfig):
     name = 'battles'
 
     def ready(self):
-        # Import signal handlers
         try:
-            from . import signals  # noqa: F401
+            from . import signals  
         except Exception:
             pass
