@@ -1,20 +1,31 @@
 {% extends "base.html" %}
-{% block title %}Create Battle - verses1{% endblock %}
+{% block title %}Create Battle - Verses1{% endblock %}
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h2 class="text-center mb-4">Create New Battle</h2>
+        <div class="col-md-5 col-lg-4">
+            <div class="text-center mb-4">
+                <div class="display-5 mb-3">🎮</div>
+                <h2 class="fw-bold">Create Battle</h2>
+                <p class="text-secondary">Start a new coding challenge</p>
+            </div>
+            <div class="card">
+                <div class="card-body p-4">
                     <form method="post">
                         {% csrf_token %}
-                        {{ form.as_p }}
+                        <p class="text-secondary text-center mb-4">
+                            Click the button below to create a new battle. You'll receive a unique code to share with your opponent.
+                        </p>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Create Battle</button>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                ⚔️ Create Battle
+                            </button>
                         </div>
                     </form>
                 </div>
+            </div>
+            <div class="text-center mt-4">
+                <a href="{% url 'home' %}" class="text-secondary">← Back to Home</a>
             </div>
         </div>
     </div>

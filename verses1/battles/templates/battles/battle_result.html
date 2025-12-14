@@ -1,91 +1,320 @@
 {% extends "base.html" %}
-{% block title %}Battle Result - verses1{% endblock %}
+{% load static %}
+{% block title %}Battle Result - {{ battle.battle_code }} | Verses1{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<style>
+    .winner-card {
+        background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
+        border: 1px solid #bbf7d0;
+    }
+    .loser-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+    }
+    .draw-card {
+        background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+        border: 1px solid #bfdbfe;
+    }
+    .score-display {
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+    .metric-row {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .metric-row:last-child {
+        border-bottom: none;
+    }
+    .comparison-bar {
+        height: 8px;
+        border-radius: 4px;
+        background: var(--card-hover);
+        overflow: hidden;
+        display: flex;
+    }
+    .comparison-fill-1 {
+        background: var(--primary);
+        height: 100%;
+    }
+    .comparison-fill-2 {
+        background: var(--warning);
+        height: 100%;
+    }
+    .CodeMirror {
+        height: auto;
+        max-height: 400px;
+        border-radius: 8px;
+        font-size: 13px;
+        border: 1px solid var(--border);
+        background: #fafafa;
+    }
+    .CodeMirror-gutters {
+        background: #f1f5f9;
+        border-right: 1px solid var(--border);
+    }
+    .code-section {
+        background: var(--card-hover);
+        border-radius: 12px;
+        padding: 15px;
+        border: 1px solid var(--border);
+    }
+    .category-winner {
+        color: var(--success);
+        font-weight: 600;
+    }
+    .trophy-icon {
+        font-size: 4rem;
+    }
+    .complexity-badge {
+        font-family: 'SF Mono', monospace;
+        padding: 4px 12px;
+        background: var(--primary);
+        border-radius: 6px;
+        font-weight: 600;
+        color: white;
+    }
+    .nav-tabs {
+        border-bottom: 1px solid var(--border);
+    }
+    .nav-tabs .nav-link {
+        color: var(--text-secondary);
+        border: none;
+        border-bottom: 2px solid transparent;
+        background: transparent;
+    }
+    .nav-tabs .nav-link:hover {
+        color: var(--text);
+        border-color: transparent;
+    }
+    .nav-tabs .nav-link.active {
+        color: var(--primary);
+        background: transparent;
+        border-bottom-color: var(--primary);
+    }
+    .metric-card {
+        background: var(--card-hover);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
-    <div class="card shadow">
-        <div class="card-body">
-            <h2 class="text-center mb-4">Battle Results</h2>
+    <!-- Result Header -->
+    <div class="row mb-4">
+        <div class="col-12">
             {% if result.is_draw %}
-            <div class="alert alert-info text-center">
-                <h3 class="mb-0">🤝 Draw — both submissions scored the same</h3>
+            <div class="card draw-card shadow text-center py-5">
+                <div class="trophy-icon">🤝</div>
+                <h1 class="display-4 mb-2">It's a Draw!</h1>
+                <p class="lead mb-0">Both contestants showed equal skill</p>
+                <p class="mt-2">Score: {{ result.winner_score|floatformat:1 }}</p>
             </div>
             {% else %}
-                {% if user.is_authenticated and user == battle.winner %}
-                <div class="alert alert-success text-center">
-                    <h3 class="mb-0">🎉 You win! 🏆</h3>
-                    <p class="small-muted mb-0">Winner: {{ battle.winner.username }}</p>
-                </div>
-                {% else %}
-                <div class="alert alert-danger text-center">
-                    <h3 class="mb-0">😞 You lost</h3>
-                    <p class="small-muted mb-0">Winner: {{ battle.winner.username }}</p>
-                </div>
-                {% endif %}
+            <div class="card winner-card shadow text-center py-5">
+                <div class="trophy-icon">🏆</div>
+                <h1 class="display-4 mb-2">{{ battle.winner.username }} Wins!</h1>
+                <p class="lead mb-0">
+                    Score: {{ result.winner_score|floatformat:1 }} vs {{ result.loser_score|floatformat:1 }}
+                    <span class="badge bg-success ms-2">+{{ result.score_difference|floatformat:1 }}</span>
+                </p>
+            </div>
             {% endif %}
-            <div class="row mt-4">
-                <div class="col-md-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h4 class="card-title">Complexity Analysis</h4>
-                            <p class="card-text">{{ result.complexity_comparison|linebreaks }}</p>
-                        </div>
+        </div>
+    </div>
+
+    <!-- Score Comparison -->
+    <div class="row mb-4">
+        {% for sub in submissions %}
+        <div class="col-md-6 mb-3">
+            <div class="card shadow h-100 {% if sub == result.winner_submission %}border-success{% endif %}">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        {{ sub.user.username }}
+                        {% if sub == result.winner_submission %}
+                        <span class="badge bg-success">Winner</span>
+                        {% endif %}
+                        {% if sub.user == user %}
+                        <span class="badge bg-primary">You</span>
+                        {% endif %}
+                    </h5>
+                    <div class="score-display {% if sub == result.winner_submission %}text-success{% else %}text-secondary{% endif %}">
+                        {{ sub.total_score|floatformat:1 }}
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h4 class="card-title">Performance Analysis</h4>
-                            <p class="card-text">{{ result.performance_comparison|linebreaks }}</p>
+                <div class="card-body">
+                    <!-- Category Scores -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-4 text-center">
+                            <div class="metric-card">
+                                <div class="h5 mb-0">{{ sub.complexity_score|floatformat:1 }}</div>
+                                <small class="text-muted">Complexity</small>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="metric-card">
+                                <div class="h5 mb-0">{{ sub.performance_score|floatformat:1 }}</div>
+                                <small class="text-muted">Performance</small>
+                            </div>
+                        </div>
+                        <div class="col-4 text-center">
+                            <div class="metric-card">
+                                <div class="h5 mb-0">{{ sub.readability_score|floatformat:1 }}</div>
+                                <small class="text-muted">Readability</small>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h4 class="card-title">Readability Analysis</h4>
-                            <p class="card-text">{{ result.readability_comparison|linebreaks }}</p>
-                        </div>
+
+                    <!-- Detailed Metrics -->
+                    <h6 class="mt-3 mb-2">📊 Metrics</h6>
+                    <div class="metric-row d-flex justify-content-between">
+                        <span>Cyclomatic Complexity</span>
+                        <strong>{{ sub.cyclomatic_complexity|default:"-" }}</strong>
+                    </div>
+                    <div class="metric-row d-flex justify-content-between">
+                        <span>Cognitive Complexity</span>
+                        <strong>{{ sub.cognitive_complexity|default:"-" }}</strong>
+                    </div>
+                    <div class="metric-row d-flex justify-content-between">
+                        <span>Maintainability Index</span>
+                        <strong>{{ sub.maintainability_index|floatformat:1|default:"-" }}</strong>
+                    </div>
+                    <div class="metric-row d-flex justify-content-between">
+                        <span>Time Complexity</span>
+                        <span class="complexity-badge">{{ sub.time_complexity_estimate|default:"?" }}</span>
+                    </div>
+                    <div class="metric-row d-flex justify-content-between">
+                        <span>Lines of Code</span>
+                        <strong>{{ sub.lines_of_code|default:"-" }}</strong>
+                    </div>
+                    <div class="metric-row d-flex justify-content-between">
+                        <span>Functions</span>
+                        <strong>{{ sub.functions_count|default:"-" }}</strong>
+                    </div>
+                    <div class="metric-row d-flex justify-content-between">
+                        <span>Security Score</span>
+                        <strong>{{ sub.vulnerability_score|floatformat:1|default:"-" }}</strong>
                     </div>
                 </div>
             </div>
-            <div class="table-responsive mt-4">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Metric</th>
-                            <th>{% if result.winner_submission %}{{ result.winner_submission.user.username }}{% else %}{{ battle.submissions.all.0.user.username }}{% endif %}</th>
-                            <th>{% if result.loser_submission %}{{ result.loser_submission.user.username }}{% else %}{{ battle.submissions.all.1.user.username }}{% endif %}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Complexity Score</td>
-                            <td>{% if result.winner_submission %}{{ result.winner_submission.complexity_score|floatformat:2 }}{% else %}{{ battle.submissions.all.0.complexity_score|floatformat:2 }}{% endif %}</td>
-                            <td>{% if result.loser_submission %}{{ result.loser_submission.complexity_score|floatformat:2 }}{% else %}{{ battle.submissions.all.1.complexity_score|floatformat:2 }}{% endif %}</td>
-                        </tr>
-                        <tr>
-                            <td>Performance Score</td>
-                            <td>{% if result.winner_submission %}{{ result.winner_submission.performance_score|floatformat:2 }}{% else %}{{ battle.submissions.all.0.performance_score|floatformat:2 }}{% endif %}</td>
-                            <td>{% if result.loser_submission %}{{ result.loser_submission.performance_score|floatformat:2 }}{% else %}{{ battle.submissions.all.1.performance_score|floatformat:2 }}{% endif %}</td>
-                        </tr>
-                        <tr>
-                            <td>Readability Score</td>
-                            <td>{% if result.winner_submission %}{{ result.winner_submission.readability_score|floatformat:2 }}{% else %}{{ battle.submissions.all.0.readability_score|floatformat:2 }}{% endif %}</td>
-                            <td>{% if result.loser_submission %}{{ result.loser_submission.readability_score|floatformat:2 }}{% else %}{{ battle.submissions.all.1.readability_score|floatformat:2 }}{% endif %}</td>
-                        </tr>
-                        <tr class="table-primary">
-                            <td><strong>Total Score</strong></td>
-                            <td><strong>{% if result.winner_submission %}{{ result.winner_submission.total_score|floatformat:2 }}{% else %}{{ battle.submissions.all.0.total_score|floatformat:2 }}{% endif %}</strong></td>
-                            <td><strong>{% if result.loser_submission %}{{ result.loser_submission.total_score|floatformat:2 }}{% else %}{{ battle.submissions.all.1.total_score|floatformat:2 }}{% endif %}</strong></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="text-center mt-4">
-                <a href="{% url 'battle_history' %}" class="btn btn-primary">View Battle History</a>
-                <a href="{% url 'create_battle' %}" class="btn btn-outline-primary ms-2">Start New Battle</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Category Comparison -->
+    {% if result.detailed_comparison %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">📈 Category Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    {% for category, data in result.detailed_comparison.categories.items %}
+                    <div class="metric-row">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-capitalize fw-bold">{{ category }}</span>
+                            <span>
+                                {% if data.winner == 1 %}
+                                <span class="category-winner">{{ submissions.0.user.username }} wins</span>
+                                {% elif data.winner == 2 %}
+                                <span class="category-winner">{{ submissions.1.user.username }} wins</span>
+                                {% else %}
+                                <span class="text-muted">Tie</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between text-muted small mb-1">
+                            <span>{{ submissions.0.user.username }}: {{ data.score1|floatformat:1 }}</span>
+                            <span>{{ submissions.1.user.username }}: {{ data.score2|floatformat:1 }}</span>
+                        </div>
+                        <div class="comparison-bar">
+                            {% widthratio data.score1 100 100 as width1 %}
+                            {% widthratio data.score2 100 100 as width2 %}
+                            <div class="comparison-fill-1" style="width: {{ data.score1 }}%"></div>
+                            <div class="comparison-fill-2" style="width: {{ data.score2 }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
+    {% endif %}
+
+    <!-- Code Comparison -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">💻 Code Submissions</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="codeTabs" role="tablist">
+                        {% for sub in submissions %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link {% if forloop.first %}active{% endif %}" 
+                                    id="code-tab-{{ forloop.counter }}" 
+                                    data-bs-toggle="tab" 
+                                    data-bs-target="#code-{{ forloop.counter }}" 
+                                    type="button" role="tab">
+                                {{ sub.user.username }}
+                                {% if sub == result.winner_submission %}🏆{% endif %}
+                            </button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    <div class="tab-content mt-3" id="codeTabContent">
+                        {% for sub in submissions %}
+                        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+                             id="code-{{ forloop.counter }}" 
+                             role="tabpanel">
+                            <div class="code-section">
+                                <textarea class="code-display" id="code-editor-{{ forloop.counter }}">{{ sub.code_content }}</textarea>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <a href="{% url 'battle_history' %}" class="btn btn-outline-secondary me-2">
+                📜 Battle History
+            </a>
+            <a href="{% url 'create_battle' %}" class="btn btn-primary">
+                ⚔️ New Battle
+            </a>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize CodeMirror for each code display
+    document.querySelectorAll('.code-display').forEach((textarea, index) => {
+        CodeMirror.fromTextArea(textarea, {
+            mode: 'python',
+            theme: 'default',
+            lineNumbers: true,
+            readOnly: true,
+            viewportMargin: Infinity
+        });
+    });
+});
+</script>
 {% endblock %}

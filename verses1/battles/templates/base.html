@@ -4,26 +4,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}verses1{% endblock %}</title>
+    <title>{% block title %}Verses1{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="{% static 'battles/css/site.css' %}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
     <style>
-        /* Layout helpers that complement site.css theme */
-        body { min-height: 100vh; display:flex; flex-direction:column; }
-        .main-content { flex:1; padding:2rem 0; }
+        body { min-height: 100vh; display: flex; flex-direction: column; }
+        .main-content { flex: 1; padding: 2rem 0; }
         .battle-card { transition: transform .2s; }
-        .battle-card:hover { transform: translateY(-5px); }
-        /* keep default bootstrap container sizing but darker background for cards handled in CSS */
-        .text-muted { color: rgba(255,255,255,0.6) !important }
-        .card .card-title { color: var(--text) }
-        .form-control, .form-select { background: rgba(255,255,255,0.02); color: var(--text); border: 1px solid rgba(255,255,255,0.03) }
-        .form-control:focus, .form-select:focus { box-shadow: 0 0 0 0.15rem rgba(124,58,237,0.12); border-color: var(--primary-2) }
+        .battle-card:hover { transform: translateY(-4px); }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">verses1</a>
+            <a class="navbar-brand" href="{% url 'home' %}">⚔️ Verses1</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -87,6 +85,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'battles/js/site.js' %}"></script>
+    {% block extra_js %}{% endblock %}
     {% block scripts %}{% endblock %}
 </body>
 </html>

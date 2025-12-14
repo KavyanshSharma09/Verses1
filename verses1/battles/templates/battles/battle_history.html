@@ -1,58 +1,78 @@
 {% extends "base.html" %}
-{% block title %}Battle History - verses1{% endblock %}
+{% block title %}Battle History - Verses1{% endblock %}
 {% block content %}
 <div class="container py-5">
-    <div class="card shadow">
-        <div class="card-body">
-            <h2 class="text-center mb-4">Your Battle History</h2>
-            {% if battle_rows %}
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">📜 Battle History</h2>
+        <p class="text-secondary">Your completed battles and results</p>
+    </div>
+    
+    {% if battle_rows %}
+    <div class="card">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover mb-0">
                     <thead>
                         <tr>
                             <th>Battle Code</th>
                             <th>Creator</th>
                             <th>Opponent</th>
-                            <th>Winner</th>
+                            <th>Result</th>
                             <th>Date</th>
-                            <th>Actions</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for row in battle_rows %}
                         <tr>
-                            <td>{{ row.battle.battle_code }}</td>
-                            <td>{{ row.battle.creator.username }}</td>
-                            <td>{{ row.battle.opponent.username }}</td>
+                            <td>
+                                <code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; color: var(--text);">
+                                    {{ row.battle.battle_code }}
+                                </code>
+                            </td>
+                            <td>
+                                {{ row.battle.creator.username }}
+                                {% if row.battle.creator == user %}<span class="badge bg-primary ms-1">You</span>{% endif %}
+                            </td>
+                            <td>
+                                {{ row.battle.opponent.username }}
+                                {% if row.battle.opponent == user %}<span class="badge bg-primary ms-1">You</span>{% endif %}
+                            </td>
                             <td>
                                 {% if row.result %}
                                     {% if row.result.is_draw %}
-                                        <span class="text-muted">Draw</span>
+                                        <span class="badge" style="background: #f1f5f9; color: var(--text-secondary);">Draw</span>
+                                    {% elif row.battle.winner == user %}
+                                        <span class="badge bg-success">🏆 Won</span>
                                     {% else %}
-                                        <span class="{% if row.battle.winner == user %}text-success{% else %}text-danger{% endif %}">
-                                            {{ row.battle.winner.username }}
-                                        </span>
+                                        <span class="badge bg-danger">Lost</span>
                                     {% endif %}
                                 {% else %}
-                                    In Progress
+                                    <span class="badge" style="background: #f1f5f9; color: var(--text-secondary);">In Progress</span>
                                 {% endif %}
                             </td>
-                            <td>{{ row.battle.created_at|date:"M d, Y" }}</td>
+                            <td class="text-secondary">{{ row.battle.created_at|date:"M d, Y" }}</td>
                             <td>
-                                <a href="{% url 'battle_result' row.battle.id %}" class="btn btn-sm btn-primary">View Results</a>
+                                <a href="{% url 'battle_result' row.battle.id %}" class="btn btn-sm btn-outline-primary">
+                                    View
+                                </a>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            {% else %}
-            <div class="text-center">
-                <p>You haven't participated in any battles yet.</p>
-                <a href="{% url 'create_battle' %}" class="btn btn-primary">Start Your First Battle</a>
-            </div>
-            {% endif %}
         </div>
     </div>
+    {% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <div class="display-5 mb-3">🎮</div>
+            <h5 class="fw-semibold mb-2">No battles yet</h5>
+            <p class="text-secondary mb-4">You haven't completed any battles yet. Start your first one!</p>
+            <a href="{% url 'create_battle' %}" class="btn btn-primary">Create Battle</a>
+        </div>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

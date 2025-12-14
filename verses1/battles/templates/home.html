@@ -1,65 +1,142 @@
 {% extends "base.html" %}
 
-{% block title %}Welcome to verses1{% endblock %}
+{% block title %}Verses1 - Code Battle Arena{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 text-center">
-            <h1 class="display-4 mb-4">Welcome to verses1</h1>
-            <p class="lead mb-5">Challenge other coders in 1v1 battles! Submit your code and let our system analyze complexity, performance, and readability.</p>
-            
-            {% if user.is_authenticated %}
-                <div class="row mb-5">
-                    <div class="col-md-6">
-                        <div class="card battle-card p-4 mb-4">
-                            <h3>Create Battle</h3>
-                            <p>Start a new coding challenge and invite others to compete.</p>
-                            <a href="{% url 'create_battle' %}" class="btn btn-primary">Create Battle</a>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card battle-card p-4 mb-4">
-                            <h3>Join Battle</h3>
-                            <p>Join an existing battle using a battle code.</p>
-                            <a href="{% url 'join_battle' %}" class="btn btn-primary">Join Battle</a>
-                        </div>
-                    </div>
-                </div>
-            {% else %}
-                <div class="card p-4 mb-5">
-                    <h2 class="mb-4">Get Started</h2>
-                    <div class="row justify-content-center">
-                        <div class="col-md-6">
-                            <a href="{% url 'register' %}" class="btn btn-primary btn-lg btn-block mb-3">Register</a>
-                        </div>
-                        <div class="col-md-6">
-                            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg btn-block">Login</a>
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold mb-3">
+            ⚔️ Code Battle Arena
+        </h1>
+        <p class="lead text-secondary mb-4" style="max-width: 600px; margin: 0 auto;">
+            Challenge other coders in 1v1 battles. Submit your code and let our AI-powered engine analyze complexity, performance, security, and readability.
+        </p>
+        
+        {% if user.is_authenticated %}
+        <div class="d-flex gap-3 justify-content-center mt-4">
+            <a href="{% url 'create_battle' %}" class="btn btn-primary btn-lg px-4">
+                🎮 Create Battle
+            </a>
+            <a href="{% url 'join_battle' %}" class="btn btn-outline-primary btn-lg px-4">
+                🔗 Join Battle
+            </a>
+        </div>
+        {% else %}
+        <div class="d-flex gap-3 justify-content-center mt-4">
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4">
+                Get Started
+            </a>
+            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg px-4">
+                Sign In
+            </a>
+        </div>
+        {% endif %}
+    </div>
 
-            <div class="row mt-5">
-                <div class="col-md-4">
-                    <div class="card p-4">
-                        <h3>Code Analysis</h3>
-                        <p>We analyze your code's complexity using advanced metrics.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card p-4">
-                        <h3>Performance</h3>
-                        <p>Your code is tested for execution time and efficiency.</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card p-4">
-                        <h3>Readability</h3>
-                        <p>Get scored on code style and readability standards.</p>
+    <!-- Features Grid -->
+    <div class="row g-4 mt-5">
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 p-4 text-center">
+                <div class="display-5 mb-3">📐</div>
+                <h5 class="fw-semibold mb-2">Complexity Analysis</h5>
+                <p class="text-secondary small mb-0">
+                    Cyclomatic & cognitive complexity metrics with maintainability scoring.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 p-4 text-center">
+                <div class="display-5 mb-3">⚡</div>
+                <h5 class="fw-semibold mb-2">Performance</h5>
+                <p class="text-secondary small mb-0">
+                    Time & space complexity estimation with algorithm pattern detection.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 p-4 text-center">
+                <div class="display-5 mb-3">🔒</div>
+                <h5 class="fw-semibold mb-2">Security</h5>
+                <p class="text-secondary small mb-0">
+                    Vulnerability scanning for SQL injection, XSS, and other security issues.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 p-4 text-center">
+                <div class="display-5 mb-3">📖</div>
+                <h5 class="fw-semibold mb-2">Readability</h5>
+                <p class="text-secondary small mb-0">
+                    Code style, naming conventions, and documentation quality scoring.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_authenticated %}
+    <!-- Quick Actions -->
+    <div class="row g-4 mt-5">
+        <div class="col-md-6">
+            <div class="card p-4 h-100">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="display-6">🎮</div>
+                    <div>
+                        <h4 class="fw-semibold mb-2">Create a Battle</h4>
+                        <p class="text-secondary mb-3">
+                            Start a new coding challenge and get a unique battle code to share with your opponent.
+                        </p>
+                        <a href="{% url 'create_battle' %}" class="btn btn-primary">Create Battle</a>
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-4 h-100">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="display-6">🔗</div>
+                    <div>
+                        <h4 class="fw-semibold mb-2">Join a Battle</h4>
+                        <p class="text-secondary mb-3">
+                            Enter a battle code to join an existing challenge and compete against another coder.
+                        </p>
+                        <a href="{% url 'join_battle' %}" class="btn btn-outline-primary">Join Battle</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- How it works -->
+    <div class="mt-5 pt-4">
+        <h3 class="text-center fw-semibold mb-4">How It Works</h3>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 48px; height: 48px; background: #eff6ff; color: var(--primary);">
+                        <span class="fw-bold">1</span>
+                    </div>
+                    <h6 class="fw-semibold">Create or Join</h6>
+                    <p class="text-secondary small">Create a new battle or join with a code</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 48px; height: 48px; background: #eff6ff; color: var(--primary);">
+                        <span class="fw-bold">2</span>
+                    </div>
+                    <h6 class="fw-semibold">Write Code</h6>
+                    <p class="text-secondary small">Use our built-in editor with live analysis</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 48px; height: 48px; background: #eff6ff; color: var(--primary);">
+                        <span class="fw-bold">3</span>
+                    </div>
+                    <h6 class="fw-semibold">Get Results</h6>
+                    <p class="text-secondary small">See detailed comparison and winner</p>
         </div>
     </div>
 </div>

@@ -45,24 +45,37 @@ document.addEventListener('DOMContentLoaded', function(){
     const battleId = match[1];
     const statusUrl = `/battle/${battleId}/status/`;
 
-    let interval = null;
+    let lastOpponentJoined = false;
+    let lastSubmissionsCount = 0;
+
     const poll = async ()=>{
       try{
         const res = await fetch(statusUrl, {credentials: 'same-origin'});
         if(!res.ok) return;
         const j = await res.json();
+        
+        if(!lastOpponentJoined && j.opponent_joined){
+          window.location.reload();
+          return;
+        }
+        lastOpponentJoined = j.opponent_joined;
+
+        if(j.submissions_count !== lastSubmissionsCount && lastSubmissionsCount !== 0){
+          window.location.reload();
+          return;
+        }
+        lastSubmissionsCount = j.submissions_count;
+
         if(j.opponent_joined && !j.is_completed){
           statusEl.textContent = 'Opponent joined — you can submit your code.';
         }
         if(j.is_completed){
-          
           window.location.href = j.result_url;
         }
       }catch(e){ console.warn('status poll failed', e); }
     };
 
-    interval = setInterval(poll, 2000);
-    
+    setInterval(poll, 2000);
     poll();
   })();
 });

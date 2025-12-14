@@ -1,82 +1,588 @@
 {% extends "base.html" %}
-{% block title %}Battle Detail - verses1{% endblock %}
+{% load static %}
+{% block title %}Battle - {{ battle.battle_code }} | Verses1{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<style>
+    .CodeMirror {
+        height: 450px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+        background: #fafafa;
+    }
+    .CodeMirror-gutters {
+        background: #f1f5f9;
+        border-right: 1px solid var(--border);
+    }
+    .score-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+    }
+    .score-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+    .score-label {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-top: 4px;
+    }
+    .metric-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin: 2px;
+    }
+    .metric-good { background: #dcfce7; color: #166534; }
+    .metric-warning { background: #fef3c7; color: #92400e; }
+    .metric-bad { background: #fee2e2; color: #991b1b; }
+    .analysis-panel {
+        background: var(--card-hover);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    .issue-item {
+        padding: 10px 14px;
+        background: var(--card);
+        border-radius: 8px;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+        border: 1px solid var(--border);
+    }
+    .issue-high { border-left: 3px solid #dc2626; }
+    .issue-medium { border-left: 3px solid #d97706; }
+    .issue-low { border-left: 3px solid #2563eb; }
+    .complexity-badge {
+        font-family: 'SF Mono', monospace;
+        padding: 6px 14px;
+        background: var(--primary);
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: white;
+    }
+    .waiting-animation {
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    .submission-status {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    .status-waiting { background: var(--card-hover); color: var(--muted); border: 1px solid var(--border); }
+    .status-submitted { background: #dcfce7; color: #166534; }
+    .category-score {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+    }
+    .category-score .value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+    .category-score .label {
+        font-size: 0.75rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="card shadow mb-4 fade-in">
-        <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2 class="text-start mb-0">Battle Code: <span class="code-badge">{{ battle.battle_code }}</span></h2>
-                <div>
-                    <button type="button" class="btn btn-outline-secondary btn-sm copy-battle-code" data-code="{{ battle.battle_code }}">Copy</button>
-                </div>
-            </div>
-            <hr class="my-3" />
-            <div id="battle-status" class="mb-3 small-muted">Waiting for opponent...</div>
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>Creator: {{ battle.creator.username }}</h4>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <h4>Opponent: {{ battle.opponent.username|default:"Waiting..." }}</h4>
+<div class="container-fluid py-4">
+    <!-- Battle Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <div>
+                            <h2 class="mb-1">
+                                Battle: <span class="text-primary">{{ battle.battle_code }}</span>
+                                <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyBattleCode()">
+                                    📋 Copy
+                                </button>
+                            </h2>
+                            <p class="text-muted mb-0">
+                                Created by {{ battle.creator.username }} • {{ battle.created_at|timesince }} ago
+                            </p>
+                        </div>
+                        <div class="d-flex gap-3 mt-2 mt-md-0">
+                            <div class="text-center">
+                                <div class="submission-status {% if battle.submissions.all|length >= 1 %}status-submitted{% else %}status-waiting{% endif %}">
+                                    {{ battle.creator.username }}
+                                    {% if battle.creator.username == user.username %}(You){% endif %}
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <div class="submission-status {% if battle.opponent %}{% if battle.submissions.all|length >= 2 %}status-submitted{% else %}status-waiting{% endif %}{% else %}status-waiting{% endif %}">
+                                    {% if battle.opponent %}
+                                        {{ battle.opponent.username }}
+                                        {% if battle.opponent.username == user.username %}(You){% endif %}
+                                    {% else %}
+                                        <span class="waiting-animation">Waiting for opponent...</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    {% if not battle.is_completed %}
-        {% if battle.opponent and user == battle.creator or battle.opponent and user == battle.opponent %}
-            {% if not user_has_submitted %}
-                <div class="card shadow">
-                    <div class="card-body">
-                        <h3 class="mb-4">Submit Your Code</h3>
-                        <form method="post" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            {{ form.as_p }}
-                            <button type="submit" class="btn btn-primary">Submit Code</button>
-                        </form>
-                    </div>
-                </div>
-            {% else %}
-                <div class="alert alert-info mt-3">
-                    You've already submitted your code. Waiting for opponent...
-                </div>
-            {% endif %}
-        {% elif not battle.opponent %}
-            <div class="alert alert-warning mt-3">
-                Waiting for opponent to join...
-                <div class="mt-2">
-                    Share this code with your opponent: <strong>{{ battle.battle_code }}</strong>
-                </div>
+    {% if battle.is_completed %}
+    <!-- Battle Completed -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-success text-center">
+                <h4>🏆 Battle Complete!</h4>
+                <p class="mb-0">
+                    {% if battle.winner %}
+                        Winner: <strong>{{ battle.winner.username }}</strong>
+                    {% else %}
+                        It's a draw!
+                    {% endif %}
+                </p>
+                <a href="{% url 'battle_result' battle.id %}" class="btn btn-primary mt-3">View Full Results</a>
             </div>
-        {% endif %}
-    {% endif %}
+        </div>
+    </div>
 
-    {% if submissions %}
-        <div class="card shadow mt-4">
-            <div class="card-body">
-                <h3 class="mb-4">Submissions</h3>
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>User</th>
-                                <th>Submitted At</th>
-                                <th>File</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for submission in submissions %}
-                            <tr>
-                                <td>{{ submission.user.username }}</td>
-                                <td>{{ submission.submitted_at }}</td>
-                                <td>{{ submission.code_file.name }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+    {% elif not battle.opponent %}
+    <!-- Waiting for opponent -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <h5>⏳ Waiting for Opponent</h5>
+                <p>Share this battle code with your opponent:</p>
+                <div class="d-flex align-items-center gap-2">
+                    <code class="fs-4 bg-dark px-3 py-2 rounded">{{ battle.battle_code }}</code>
+                    <button class="btn btn-outline-primary" onclick="copyBattleCode()">Copy Code</button>
                 </div>
             </div>
         </div>
+    </div>
+
+    {% elif user_has_submitted %}
+    <!-- Already submitted -->
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h5>✅ Code Submitted!</h5>
+                <p class="mb-0">Your code has been submitted. Waiting for 
+                    {% if user == battle.creator %}
+                        {{ battle.opponent.username }}
+                    {% else %}
+                        {{ battle.creator.username }}
+                    {% endif %}
+                    to submit their code...</p>
+                <div class="mt-3">
+                    <strong>Your Score:</strong> {{ user_submission.total_score|floatformat:1 }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Code Editor Section -->
+    <div class="row">
+        <!-- Editor Column -->
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">📝 Code Editor</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-info" id="analyzeBtn" onclick="analyzeCode()">
+                            🔍 Analyze
+                        </button>
+                        <button class="btn btn-sm btn-primary" id="submitBtn" onclick="submitCode()">
+                            🚀 Submit
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <textarea id="codeEditor"># Write your Python code here
+def solution():
+    """Your solution goes here"""
+    pass
+
+if __name__ == "__main__":
+    solution()
+</textarea>
+                </div>
+                <div class="card-footer">
+                    <small class="text-muted">
+                        Write clean, efficient Python code. Your code will be analyzed for complexity, performance, readability, and security.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Panel -->
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">📊 Live Analysis</h5>
+                </div>
+                <div class="card-body analysis-panel" id="analysisPanel">
+                    <div class="text-center text-muted py-5">
+                        <p>Click "Analyze" to see real-time code analysis</p>
+                        <small>Your code will be evaluated on:</small>
+                        <ul class="list-unstyled mt-2">
+                            <li>📐 Complexity</li>
+                            <li>⚡ Performance</li>
+                            <li>📖 Readability</li>
+                            <li>🔒 Security</li>
+                            <li>🎨 Code Style</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Submissions Status -->
+    {% if submissions %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header">
+                    <h5 class="mb-0">📋 Submissions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Score</th>
+                                    <th>Lines</th>
+                                    <th>Functions</th>
+                                    <th>Complexity</th>
+                                    <th>Submitted</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sub in submissions %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ sub.user.username }}</strong>
+                                        {% if sub.user == user %}<span class="badge bg-primary">You</span>{% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold {% if sub.total_score >= 70 %}text-success{% elif sub.total_score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+                                            {{ sub.total_score|floatformat:1 }}
+                                        </span>
+                                    </td>
+                                    <td>{{ sub.lines_of_code|default:"-" }}</td>
+                                    <td>{{ sub.functions_count|default:"-" }}</td>
+                                    <td>
+                                        {% if sub.time_complexity_estimate %}
+                                        <span class="complexity-badge">{{ sub.time_complexity_estimate }}</span>
+                                        {% else %}-{% endif %}
+                                    </td>
+                                    <td>{{ sub.submitted_at|timesince }} ago</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script>
+    let editor;
+    const battleId = {{ battle.id }};
+    const csrfToken = '{{ csrf_token }}';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const editorElement = document.getElementById('codeEditor');
+        if (editorElement) {
+            editor = CodeMirror.fromTextArea(editorElement, {
+                mode: 'python',
+                theme: 'default',
+                lineNumbers: true,
+                matchBrackets: true,
+                autoCloseBrackets: true,
+                indentUnit: 4,
+                tabSize: 4,
+                indentWithTabs: false,
+                lineWrapping: true,
+                extraKeys: {
+                    'Tab': function(cm) {
+                        cm.replaceSelection('    ', 'end');
+                    }
+                }
+            });
+        }
+
+        checkBattleStatus();
+        setInterval(checkBattleStatus, 2000);
+    });
+
+    function copyBattleCode() {
+        navigator.clipboard.writeText('{{ battle.battle_code }}');
+        alert('Battle code copied!');
+    }
+
+    async function analyzeCode() {
+        const code = editor.getValue();
+        const btn = document.getElementById('analyzeBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Analyzing...';
+
+        try {
+            const response = await fetch('{% url "analyze_code_preview" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ code: code })
+            });
+
+            const data = await response.json();
+            displayAnalysis(data);
+        } catch (error) {
+            console.error('Analysis error:', error);
+            document.getElementById('analysisPanel').innerHTML = `
+                <div class="alert alert-danger">Error analyzing code: ${error.message}</div>
+            `;
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🔍 Analyze';
+        }
+    }
+
+    function displayAnalysis(data) {
+        const panel = document.getElementById('analysisPanel');
+        
+        if (!data.is_valid) {
+            panel.innerHTML = `
+                <div class="alert alert-danger">
+                    <h6>❌ Syntax Error</h6>
+                    <code>${data.syntax_error}</code>
+                </div>
+            `;
+            return;
+        }
+
+        const getScoreClass = (score) => {
+            if (score >= 70) return 'metric-good';
+            if (score >= 50) return 'metric-warning';
+            return 'metric-bad';
+        };
+
+        const getScoreColor = (score) => {
+            if (score >= 70) return '#16a34a';
+            if (score >= 50) return '#d97706';
+            return '#dc2626';
+        };
+
+        let issuesHtml = '';
+        if (data.issues && data.issues.length > 0) {
+            issuesHtml = '<h6 class="mt-3">⚠️ Issues Found</h6>';
+            data.issues.slice(0, 5).forEach(issue => {
+                issuesHtml += `
+                    <div class="issue-item issue-${issue.severity}">
+                        <strong>Line ${issue.line}:</strong> ${issue.message}
+                    </div>
+                `;
+            });
+        }
+
+        let securityHtml = '';
+        if (data.security_issues && data.security_issues.length > 0) {
+            securityHtml = '<h6 class="mt-3">🔒 Security Issues</h6>';
+            data.security_issues.forEach(issue => {
+                securityHtml += `
+                    <div class="issue-item issue-high">
+                        <strong>${issue.category}:</strong> ${issue.message}
+                    </div>
+                `;
+            });
+        }
+
+        panel.innerHTML = `
+            <!-- Total Score -->
+            <div class="score-card text-center mb-4" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+                <div class="score-value" style="color: ${getScoreColor(data.total_score)}">${data.total_score}</div>
+                <div class="score-label">Total Score</div>
+            </div>
+
+            <!-- Category Scores -->
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <div class="text-center p-2 rounded" style="background: #f1f5f9; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 1.2rem; color: ${getScoreColor(data.complexity_score)}; font-weight: 600;">${data.complexity_score}</div>
+                        <small style="color: #64748b;">Complexity</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="text-center p-2 rounded" style="background: #f1f5f9; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 1.2rem; color: ${getScoreColor(data.performance_score)}; font-weight: 600;">${data.performance_score}</div>
+                        <small style="color: #64748b;">Performance</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="text-center p-2 rounded" style="background: #f1f5f9; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 1.2rem; color: ${getScoreColor(data.readability_score)}; font-weight: 600;">${data.readability_score}</div>
+                        <small style="color: #64748b;">Readability</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="text-center p-2 rounded" style="background: #f1f5f9; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 1.2rem; color: ${getScoreColor(data.security_score)}; font-weight: 600;">${data.security_score}</div>
+                        <small style="color: #64748b;">Security</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metrics -->
+            <h6>📐 Code Metrics</h6>
+            <div class="mb-3">
+                <span class="metric-badge ${getScoreClass(100 - data.cyclomatic_complexity * 5)}">
+                    CC: ${data.cyclomatic_complexity}
+                </span>
+                <span class="metric-badge ${getScoreClass(100 - data.cognitive_complexity * 3)}">
+                    Cognitive: ${data.cognitive_complexity}
+                </span>
+                <span class="metric-badge ${getScoreClass(data.maintainability_index)}">
+                    MI: ${data.maintainability_index}
+                </span>
+            </div>
+
+            <h6>⏱️ Complexity Estimates</h6>
+            <div class="mb-3">
+                <span class="complexity-badge">${data.time_complexity}</span>
+                <span class="complexity-badge ms-2">${data.space_complexity} space</span>
+            </div>
+
+            <h6>📊 Structure</h6>
+            <div class="mb-3">
+                <small class="d-block">Lines: ${data.lines_of_code} (${data.logical_lines} logical, ${data.comment_lines} comments)</small>
+                <small class="d-block">Functions: ${data.functions_count} | Classes: ${data.classes_count}</small>
+                <small class="d-block">Nesting Depth: ${data.nested_depth} | Avg Func Length: ${data.avg_function_length}</small>
+            </div>
+
+            <h6>🔬 Halstead Metrics</h6>
+            <div class="mb-3">
+                <small class="d-block">Volume: ${data.halstead.volume} | Difficulty: ${data.halstead.difficulty}</small>
+                <small class="d-block">Effort: ${data.halstead.effort} | Est. Bugs: ${data.halstead.bugs}</small>
+            </div>
+
+            ${issuesHtml}
+            ${securityHtml}
+        `;
+    }
+
+    async function submitCode() {
+        const code = editor.getValue();
+        
+        if (!code.trim()) {
+            alert('Please write some code before submitting!');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to submit your code? This action cannot be undone.')) {
+            return;
+        }
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Submitting...';
+
+        try {
+            const response = await fetch(`/battle/${battleId}/submit/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ code: code })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                if (data.battle_complete) {
+                    alert('Battle complete! Redirecting to results...');
+                    window.location.href = data.result.result_url;
+                } else {
+                    alert('Code submitted successfully! Score: ' + data.analysis.total_score);
+                    window.location.reload();
+                }
+            } else {
+                alert('Error: ' + data.error);
+                btn.disabled = false;
+                btn.textContent = '🚀 Submit';
+            }
+        } catch (error) {
+            console.error('Submit error:', error);
+            alert('Error submitting code: ' + error.message);
+            btn.disabled = false;
+            btn.textContent = '🚀 Submit';
+        }
+    }
+
+    let lastOpponentJoined = {{ battle.opponent|yesno:"true,false" }};
+    let lastSubmissionsCount = {{ battle.submissions.count }};
+
+    async function checkBattleStatus() {
+        try {
+            const response = await fetch(`/battle/${battleId}/status/`);
+            const data = await response.json();
+
+            if (data.is_completed && data.result_url) {
+                window.location.href = data.result_url;
+                return;
+            }
+
+            if (!lastOpponentJoined && data.opponent_joined) {
+                window.location.reload();
+                return;
+            }
+
+            if (data.submissions_count !== lastSubmissionsCount) {
+                window.location.reload();
+                return;
+            }
+        } catch (error) {
+            console.error('Status check error:', error);
+        }
+    }
+</script>
 {% endblock %}

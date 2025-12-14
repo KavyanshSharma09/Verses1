@@ -1,20 +1,44 @@
 {% extends "base.html" %}
-{% block title %}Join Battle - verses1{% endblock %}
+{% block title %}Join Battle - Verses1{% endblock %}
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h2 class="text-center mb-4">Join Battle</h2>
+        <div class="col-md-5 col-lg-4">
+            <div class="text-center mb-4">
+                <div class="display-5 mb-3">🔗</div>
+                <h2 class="fw-bold">Join Battle</h2>
+                <p class="text-secondary">Enter a battle code to join</p>
+            </div>
+            <div class="card">
+                <div class="card-body p-4">
                     <form method="post">
                         {% csrf_token %}
-                        {{ form.as_p }}
+                        <div class="mb-4">
+                            <label for="id_battle_code" class="form-label">Battle Code</label>
+                            <input type="text" 
+                                   name="battle_code" 
+                                   id="id_battle_code"
+                                   class="form-control form-control-lg text-center {% if form.battle_code.errors %}is-invalid{% endif %}"
+                                   placeholder="XXXXXXXX"
+                                   maxlength="8"
+                                   style="letter-spacing: 0.2em; font-family: monospace; text-transform: uppercase;">
+                            {% if form.battle_code.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.battle_code.errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text text-center">Enter the 8-character battle code</div>
+                        </div>
                         <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Join Battle</button>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                🎯 Join Battle
+                            </button>
                         </div>
                     </form>
                 </div>
+            </div>
+            <div class="text-center mt-4">
+                <a href="{% url 'home' %}" class="text-secondary">← Back to Home</a>
             </div>
         </div>
     </div>
