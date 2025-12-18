@@ -408,7 +408,6 @@ class CodeAnalysisEngine:
         }
     
     def _estimate_time_complexity(self, tree: ast.AST, ast_analyzer: ASTAnalyzer) -> str:
-        """Estimate time complexity based on loop analysis"""
         loops = ast_analyzer.loops
         
         if not loops:
@@ -443,7 +442,6 @@ class CodeAnalysisEngine:
             return "O(1)"
     
     def _estimate_space_complexity(self, tree: ast.AST, ast_analyzer: ASTAnalyzer) -> str:
-        """Estimate space complexity"""
         comprehensions = sum(1 for node in ast.walk(tree) if isinstance(node, (ast.ListComp, ast.DictComp, ast.SetComp)))
         
         has_recursion = self._detect_recursion(tree, ast_analyzer)
@@ -460,7 +458,6 @@ class CodeAnalysisEngine:
             return "O(1)"
     
     def _detect_recursion(self, tree: ast.AST, ast_analyzer: ASTAnalyzer) -> bool:
-        """Detect if code contains recursive function calls"""
         function_names = {f['name'] for f in ast_analyzer.functions}
         
         for node in ast.walk(tree):
@@ -472,7 +469,6 @@ class CodeAnalysisEngine:
         return False
     
     def _detect_binary_search(self, tree: ast.AST) -> bool:
-        """Detect binary search pattern"""
         code = ast.unparse(tree)
         patterns = [
             r'mid\s*=.*//\s*2',
@@ -495,7 +491,6 @@ class CodeAnalysisEngine:
         return False
     
     def _analyze_security(self, code: str) -> List[Dict[str, Any]]:
-        """Analyze code for security vulnerabilities"""
         issues = []
         
         for category, config in self.security_patterns.items():
@@ -514,7 +509,6 @@ class CodeAnalysisEngine:
         return issues
     
     def _analyze_style(self, code: str, lines: List[str], ast_analyzer: ASTAnalyzer) -> List[Dict[str, Any]]:
-        """Analyze code style and quality"""
         issues = []
         
         for i, line in enumerate(lines, 1):
@@ -565,7 +559,6 @@ class CodeAnalysisEngine:
         return issues
     
     def _score_complexity(self, result: AnalysisResult) -> float:
-        """Score based on complexity metrics"""
         score = 100.0
         
         if result.cyclomatic_complexity > 20:
@@ -585,7 +578,6 @@ class CodeAnalysisEngine:
         return max(0, min(100, score))
     
     def _score_performance(self, result: AnalysisResult, ast_analyzer: ASTAnalyzer) -> float:
-        """Score based on performance characteristics"""
         score = 100.0
         
         complexity_penalties = {
@@ -613,7 +605,6 @@ class CodeAnalysisEngine:
         return max(0, min(100, score))
     
     def _score_readability(self, result: AnalysisResult, lines: List[str], ast_analyzer: ASTAnalyzer) -> float:
-        """Score based on readability"""
         score = 100.0
         
         if result.lines_of_code > 0:
@@ -639,7 +630,6 @@ class CodeAnalysisEngine:
         return max(0, min(100, score))
     
     def _score_security(self, result: AnalysisResult) -> float:
-        """Score based on security issues"""
         score = 100.0
         
         severity_penalties = {
@@ -655,7 +645,6 @@ class CodeAnalysisEngine:
         return max(0, min(100, score))
     
     def _score_style(self, result: AnalysisResult, lines: List[str], ast_analyzer: ASTAnalyzer) -> float:
-        """Score based on code style"""
         score = 100.0
         
         for issue in result.issues:
@@ -678,7 +667,6 @@ class CodeAnalysisEngine:
         return max(0, min(100, score))
     
     def compare(self, result1: AnalysisResult, result2: AnalysisResult) -> Dict[str, Any]:
-        """Compare two analysis results"""
         comparison = {
             'winner': None,
             'score_diff': abs(result1.total_score - result2.total_score),
@@ -723,12 +711,10 @@ def get_analyzer() -> CodeAnalysisEngine:
 
 
 def analyze_code(code: str) -> AnalysisResult:
-    """Convenience function to analyze code"""
     return get_analyzer().analyze(code)
 
 
 def compare_code(code1: str, code2: str) -> Tuple[AnalysisResult, AnalysisResult, Dict[str, Any]]:
-    """Analyze and compare two code submissions"""
     analyzer = get_analyzer()
     result1 = analyzer.analyze(code1)
     result2 = analyzer.analyze(code2)
