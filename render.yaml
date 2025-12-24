@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: verses1
+    runtime: python
+    plan: free
+    rootDir: verses1
+    buildCommand: ./build.sh
+    startCommand: cd verses1 && gunicorn verses1.wsgi:application
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: PYTHON_VERSION
+        value: "3.11.0"
