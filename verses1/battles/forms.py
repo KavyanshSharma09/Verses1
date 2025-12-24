@@ -35,12 +35,18 @@ class BattleJoinForm(forms.Form):
     battle_code = forms.CharField(max_length=8, min_length=8,
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter battle code'}))
 
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = user
+
     def clean_battle_code(self):
         code = self.cleaned_data.get('battle_code')
         try:
             battle = Battle.objects.get(battle_code=code, is_completed=False)
             if battle.opponent is not None:
                 raise forms.ValidationError('This battle is already full.')
+            if self.user and battle.creator == self.user:
+                raise forms.ValidationError('You cannot join your own battle.')
             return code
         except Battle.DoesNotExist:
             raise forms.ValidationError('Invalid battle code.')

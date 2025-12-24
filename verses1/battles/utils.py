@@ -2,8 +2,6 @@ import ast
 import time
 import tempfile
 import os
-import subprocess
-import shlex
 
 def count_complexity_metrics(code):
     """Count basic complexity metrics like number of functions, classes, and lines."""
@@ -14,36 +12,52 @@ def count_complexity_metrics(code):
         num_lines = len(code.splitlines())
         score = 100 - (num_functions * 5 + num_classes * 10 + num_lines * 0.5)
         return max(0, min(score, 100))
-    except:
+    except (SyntaxError, ValueError, TypeError):
         return 0
 
 def analyze_code_complexity(code):
     return count_complexity_metrics(code)
 
 def analyze_code_performance(code):
+    """
+    Analyze code performance using static analysis only (no execution).
+    Scores based on algorithmic patterns and code structure.
+    """
     try:
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as tmp_file:
-            tmp_file.write(code)
-            tmp_file.flush()
-        start_time = time.time()
-        try:
-            completed = subprocess.run(
-                ["python", tmp_file.name],
-                capture_output=True,
-                text=True,
-                timeout=3
-            )
-            execution_time = time.time() - start_time
-        except subprocess.TimeoutExpired:
-            execution_time = 10.0  
-        finally:
-            try:
-                os.unlink(tmp_file.name)
-            except Exception:
-                pass
-
-        return max(0, 100 - (execution_time * 10))
-    except:
+        tree = ast.parse(code)
+        score = 100.0
+        
+        # Count nested loops (indicates potential O(n²) or worse)
+        nested_loops = 0
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.For, ast.While)):
+                for child in ast.walk(node):
+                    if isinstance(child, (ast.For, ast.While)) and child is not node:
+                        nested_loops += 1
+        score -= nested_loops * 15
+        
+        # Check for recursion (can be expensive)
+        functions = {node.name for node in ast.walk(tree) if isinstance(node, ast.FunctionDef)}
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                for child in ast.walk(node):
+                    if isinstance(child, ast.Call):
+                        if isinstance(child.func, ast.Name) and child.func.id == node.name:
+                            score -= 10  # Recursive call detected
+        
+        # Count total loops
+        loop_count = len([n for n in ast.walk(tree) if isinstance(n, (ast.For, ast.While))])
+        score -= loop_count * 3
+        
+        # Check for efficient built-ins usage
+        efficient_calls = ['map', 'filter', 'sorted', 'enumerate', 'zip']
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+                if node.func.id in efficient_calls:
+                    score += 2  # Bonus for using efficient built-ins
+        
+        return max(0, min(score, 100))
+    except (SyntaxError, ValueError, TypeError):
         return 0
 
 def analyze_code_readability(code):
@@ -62,7 +76,7 @@ def analyze_code_readability(code):
         ]
         
         return sum(scores) / len(scores)
-    except:
+    except (ZeroDivisionError, TypeError):
         return 0
 
 def calculate_total_score(complexity_score, performance_score, readability_score):

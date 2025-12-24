@@ -11,16 +11,18 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = 'django-insecure-a672mx!_(+m)dlsu4@+4^6yhf^vh#zx*j8tb5$9&4=!!54*)l#'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-a672mx!_(+m)dlsu4@+4^6yhf^vh#zx*j8tb5$9&4=!!54*)l#')
 
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = [
     'verses1-4.onrender.com',
+    '.onrender.com',
     'localhost',
     '127.0.0.1',
     'testserver'
@@ -40,6 +42,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -75,6 +78,12 @@ DATABASES = {
     }
 }
 
+# Use PostgreSQL on Render if DATABASE_URL is set
+import dj_database_url
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES['default'] = dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -102,11 +111,20 @@ USE_TZ = True
 
 
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/'
+
+# CSRF settings for production
+CSRF_TRUSTED_ORIGINS = [
+    'https://verses1-4.onrender.com',
+    'https://*.onrender.com',
+]
+
+# Static files storage for production
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

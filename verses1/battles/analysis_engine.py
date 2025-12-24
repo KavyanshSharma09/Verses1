@@ -320,9 +320,7 @@ class CodeAnalysisEngine:
         return complexity
     
     def _calculate_cognitive_complexity(self, tree: ast.AST) -> int:
-        
-        complexity = 0
-        nesting_level = 0
+        """Calculate cognitive complexity for the AST"""
         
         class CognitiveVisitor(ast.NodeVisitor):
             def __init__(self):

@@ -41,7 +41,7 @@ def create_battle(request):
 @login_required
 def join_battle(request):
     if request.method == 'POST':
-        form = BattleJoinForm(request.POST)
+        form = BattleJoinForm(request.POST, user=request.user)
         if form.is_valid():
             battle = Battle.objects.get(battle_code=form.cleaned_data['battle_code'])
             battle.opponent = request.user
@@ -49,13 +49,25 @@ def join_battle(request):
             messages.success(request, 'Successfully joined the battle!')
             return redirect('battle_detail', battle_id=battle.id)
     else:
-        form = BattleJoinForm()
+        form = BattleJoinForm(user=request.user)
     return render(request, 'battles/join_battle.html', {'form': form})
 
 @login_required
 def battle_detail(request, battle_id):
     battle = get_object_or_404(Battle, id=battle_id)
+    
+    # Check if user is part of this battle
+    if request.user != battle.creator and request.user != battle.opponent:
+        messages.error(request, 'You are not a participant in this battle.')
+        return redirect('home')
+    
+    # Check if user already submitted
+    user_has_submitted = battle.submissions.filter(user=request.user).exists()
+    
     if request.method == 'POST' and 'code_file' in request.FILES:
+        if user_has_submitted:
+            messages.error(request, 'You have already submitted code for this battle.')
+            return redirect('battle_detail', battle_id=battle.id)
         form = CodeSubmissionForm(request.POST, request.FILES)
         if form.is_valid():
             submission = form.save(commit=False)
@@ -118,7 +130,7 @@ def battle_detail(request, battle_id):
         'battle': battle,
         'form': form,
         'submissions': battle.submissions.all(),
-        'user_has_submitted': battle.submissions.filter(user=request.user).exists()
+        'user_has_submitted': user_has_submitted
     }
     return render(request, 'battles/battle_detail.html', context)
 
