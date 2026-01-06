@@ -173,3 +173,47 @@ def battle_history(request):
 def login_activity(request):
     recent = LoginActivity.objects.select_related('user').order_by('-timestamp')[:200]
     return render(request, 'battles/login_activity.html', {'activities': recent})
+
+
+@login_required
+def analyze_code_preview(request):
+    """AJAX endpoint to preview code analysis before submission"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    import json
+    from .analysis_engine import analyze_code
+    
+    try:
+        data = json.loads(request.body)
+        code = data.get('code', '')
+        
+        if not code.strip():
+            return JsonResponse({'error': 'No code provided'}, status=400)
+        
+        result = analyze_code(code)
+        
+        return JsonResponse({
+            'is_valid': result.is_valid,
+            'syntax_error': result.syntax_error,
+            'total_score': round(result.total_score, 2),
+            'complexity_score': round(result.complexity_score, 2),
+            'performance_score': round(result.performance_score, 2),
+            'readability_score': round(result.readability_score, 2),
+            'security_score': round(result.security_score, 2),
+            'style_score': round(result.style_score, 2),
+            'cyclomatic_complexity': result.cyclomatic_complexity,
+            'cognitive_complexity': result.cognitive_complexity,
+            'maintainability_index': round(result.maintainability_index, 2),
+            'time_complexity': result.time_complexity,
+            'space_complexity': result.space_complexity,
+            'lines_of_code': result.lines_of_code,
+            'functions_count': result.functions_count,
+            'classes_count': result.classes_count,
+            'issues': result.issues[:10],  # Limit to 10 issues
+            'security_issues': result.security_issues[:5],  # Limit to 5 security issues
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

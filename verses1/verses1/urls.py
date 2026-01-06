@@ -20,6 +20,7 @@ urlpatterns = [
     path('battles/history/', views.battle_history, name='battle_history'),
     
     path('login-activity/', views.login_activity, name='login_activity'),
+    path('api/analyze-preview/', views.analyze_code_preview, name='analyze_code_preview'),
     
     path('', include('upload.urls')),
 ]
