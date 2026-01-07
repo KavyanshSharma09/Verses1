@@ -5,8 +5,9 @@
 {% block title %}{{ problem.title }} - Practice{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
 {% endblock %}
 
 {% block content %}
@@ -858,9 +859,12 @@ function escapeHtml(text) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Determine initial theme
+    const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+    
     editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
         mode: 'python',
-        theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dracula' : 'default',
+        theme: isDarkMode ? 'material-darker' : 'default',
         lineNumbers: true,
         indentUnit: 4,
         tabSize: 4,
@@ -891,6 +895,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Force theme refresh after a short delay (ensures theme CSS is loaded)
+    setTimeout(function() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        editor.setOption('theme', currentTheme === 'dark' ? 'material-darker' : 'default');
+        editor.refresh();
+    }, 100);
+    
     // Auto-show hints while typing
     editor.on('inputRead', function(cm, change) {
         if (change.text[0].match(/[a-zA-Z_]/)) {
@@ -906,7 +917,8 @@ document.addEventListener('DOMContentLoaded', function() {
         mutations.forEach(function(mutation) {
             if (mutation.attributeName === 'data-theme') {
                 const theme = document.documentElement.getAttribute('data-theme');
-                editor.setOption('theme', theme === 'dark' ? 'dracula' : 'default');
+                editor.setOption('theme', theme === 'dark' ? 'material-darker' : 'default');
+                editor.refresh();
             }
         });
     });

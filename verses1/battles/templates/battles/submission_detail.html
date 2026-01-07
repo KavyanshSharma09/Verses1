@@ -6,6 +6,7 @@
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
 <style>
 .submission-header {
     background: var(--card);
@@ -282,13 +283,26 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
 <script>
 // Initialize CodeMirror for code display
+const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
 const codeDisplay = CodeMirror.fromTextArea(document.getElementById('codeDisplay'), {
     mode: 'python',
-    theme: 'dracula',
+    theme: isDarkMode ? 'material-darker' : 'default',
     lineNumbers: true,
     readOnly: true,
     viewportMargin: Infinity
 });
+
+// Listen for theme changes
+const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (mutation.attributeName === 'data-theme') {
+            const theme = document.documentElement.getAttribute('data-theme');
+            codeDisplay.setOption('theme', theme === 'dark' ? 'material-darker' : 'default');
+            codeDisplay.refresh();
+        }
+    });
+});
+observer.observe(document.documentElement, { attributes: true });
 
 function copyCode() {
     navigator.clipboard.writeText(codeDisplay.getValue());
