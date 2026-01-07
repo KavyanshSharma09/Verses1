@@ -2,30 +2,88 @@
 
 {% block title %}Verses1 - Code Battle Arena{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Dark mode for home page */
+[data-theme="dark"] .hero-section {
+    background: transparent;
+}
+
+[data-theme="dark"] .badge-pill {
+    background: linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(139,92,246,0.2) 100%);
+    border-color: rgba(99, 102, 241, 0.3);
+    color: #a5b4fc;
+}
+
+[data-theme="dark"] .feature-card h5,
+[data-theme="dark"] .action-card h4,
+[data-theme="dark"] .step-card h6 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .feature-card p,
+[data-theme="dark"] .action-card p,
+[data-theme="dark"] .step-card p {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h3 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .lead {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] span {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] strong {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .text-muted {
+    color: #94a3b8 !important;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
     <!-- Hero Section -->
-    <div class="text-center mb-5">
+    <div class="hero-section text-center mb-5">
+        <div class="hero-badge mb-3">
+            <span class="badge-pill">New: Practice Mode + Dark Theme</span>
+        </div>
         <h1 class="display-4 fw-bold mb-3">
-            ⚔️ Code Battle Arena
+            Code. Compete. <span class="text-gradient">Conquer.</span>
         </h1>
         <p class="lead text-secondary mb-4" style="max-width: 600px; margin: 0 auto;">
-            Challenge other coders in 1v1 battles. Submit your code and let our AI-powered engine analyze complexity, performance, security, and readability.
+            Challenge developers in real-time 1v1 coding battles. Solve problems, pass test cases, and let our analysis engine determine the winner.
         </p>
         
         {% if user.is_authenticated %}
         <div class="d-flex gap-3 justify-content-center mt-4">
             <a href="{% url 'create_battle' %}" class="btn btn-primary btn-lg px-4">
-                🎮 Create Battle
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 8v8M8 12h8"/>
+                </svg>
+                Create Battle
             </a>
             <a href="{% url 'join_battle' %}" class="btn btn-outline-primary btn-lg px-4">
-                🔗 Join Battle
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/>
+                </svg>
+                Join Battle
             </a>
         </div>
         {% else %}
         <div class="d-flex gap-3 justify-content-center mt-4">
             <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4">
-                Get Started
+                Get Started Free
             </a>
             <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg px-4">
                 Sign In
@@ -37,8 +95,12 @@
     <!-- Features Grid -->
     <div class="row g-4 mt-5">
         <div class="col-md-6 col-lg-3">
-            <div class="card h-100 p-4 text-center">
-                <div class="display-5 mb-3">📐</div>
+            <div class="card feature-card h-100 p-4 text-center">
+                <div class="feature-icon mb-3">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                </div>
                 <h5 class="fw-semibold mb-2">Complexity Analysis</h5>
                 <p class="text-secondary small mb-0">
                     Cyclomatic & cognitive complexity metrics with maintainability scoring.
@@ -46,29 +108,46 @@
             </div>
         </div>
         <div class="col-md-6 col-lg-3">
-            <div class="card h-100 p-4 text-center">
-                <div class="display-5 mb-3">⚡</div>
+            <div class="card feature-card h-100 p-4 text-center">
+                <div class="feature-icon mb-3">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                </div>
                 <h5 class="fw-semibold mb-2">Performance</h5>
                 <p class="text-secondary small mb-0">
-                    Time & space complexity estimation with algorithm pattern detection.
+                    Real-time execution with time & space complexity estimation.
                 </p>
             </div>
         </div>
         <div class="col-md-6 col-lg-3">
-            <div class="card h-100 p-4 text-center">
-                <div class="display-5 mb-3">🔒</div>
-                <h5 class="fw-semibold mb-2">Security</h5>
+            <div class="card feature-card h-100 p-4 text-center">
+                <div class="feature-icon mb-3">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                </div>
+                <h5 class="fw-semibold mb-2">Sandboxed</h5>
                 <p class="text-secondary small mb-0">
-                    Vulnerability scanning for SQL injection, XSS, and other security issues.
+                    Secure code execution with forbidden import detection.
                 </p>
             </div>
         </div>
         <div class="col-md-6 col-lg-3">
-            <div class="card h-100 p-4 text-center">
-                <div class="display-5 mb-3">📖</div>
-                <h5 class="fw-semibold mb-2">Readability</h5>
+            <div class="card feature-card h-100 p-4 text-center">
+                <div class="feature-icon mb-3">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                </div>
+                <h5 class="fw-semibold mb-2">Test Cases</h5>
                 <p class="text-secondary small mb-0">
-                    Code style, naming conventions, and documentation quality scoring.
+                    Validate solutions against hidden & visible test cases.
                 </p>
             </div>
         </div>
@@ -77,30 +156,59 @@
     {% if user.is_authenticated %}
     <!-- Quick Actions -->
     <div class="row g-4 mt-5">
-        <div class="col-md-6">
-            <div class="card p-4 h-100">
+        <div class="col-md-4">
+            <div class="card action-card p-4 h-100">
                 <div class="d-flex align-items-start gap-3">
-                    <div class="display-6">🎮</div>
+                    <div class="action-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 8v8M8 12h8"/>
+                        </svg>
+                    </div>
                     <div>
                         <h4 class="fw-semibold mb-2">Create a Battle</h4>
                         <p class="text-secondary mb-3">
-                            Start a new coding challenge and get a unique battle code to share with your opponent.
+                            Pick a problem, start a new battle, and share the code with your opponent.
                         </p>
                         <a href="{% url 'create_battle' %}" class="btn btn-primary">Create Battle</a>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card p-4 h-100">
+        <div class="col-md-4">
+            <div class="card action-card p-4 h-100">
                 <div class="d-flex align-items-start gap-3">
-                    <div class="display-6">🔗</div>
+                    <div class="action-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/>
+                        </svg>
+                    </div>
                     <div>
                         <h4 class="fw-semibold mb-2">Join a Battle</h4>
                         <p class="text-secondary mb-3">
                             Enter a battle code to join an existing challenge and compete against another coder.
                         </p>
                         <a href="{% url 'join_battle' %}" class="btn btn-outline-primary">Join Battle</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card action-card p-4 h-100" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border-color: rgba(99, 102, 241, 0.2);">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="action-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h4 class="fw-semibold mb-2">Practice Mode</h4>
+                        <p class="text-secondary mb-3">
+                            Solve problems at your own pace. Track progress and improve your skills.
+                        </p>
+                        <a href="{% url 'practice' %}" class="btn btn-primary">Start Practicing</a>
                     </div>
                 </div>
             </div>
@@ -113,30 +221,30 @@
         <h3 class="text-center fw-semibold mb-4">How It Works</h3>
         <div class="row g-4">
             <div class="col-md-4">
-                <div class="text-center">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 48px; height: 48px; background: #eff6ff; color: var(--primary);">
-                        <span class="fw-bold">1</span>
+                <div class="text-center step-card">
+                    <div class="step-number">
+                        <span>1</span>
                     </div>
                     <h6 class="fw-semibold">Create or Join</h6>
-                    <p class="text-secondary small">Create a new battle or join with a code</p>
+                    <p class="text-secondary small">Start a new battle or enter a code to join</p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="text-center">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 48px; height: 48px; background: #eff6ff; color: var(--primary);">
-                        <span class="fw-bold">2</span>
+                <div class="text-center step-card">
+                    <div class="step-number">
+                        <span>2</span>
                     </div>
-                    <h6 class="fw-semibold">Write Code</h6>
-                    <p class="text-secondary small">Use our built-in editor with live analysis</p>
+                    <h6 class="fw-semibold">Solve & Test</h6>
+                    <p class="text-secondary small">Write code and pass all test cases to submit</p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="text-center">
-                    <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 48px; height: 48px; background: #eff6ff; color: var(--primary);">
-                        <span class="fw-bold">3</span>
+                <div class="text-center step-card">
+                    <div class="step-number">
+                        <span>3</span>
                     </div>
                     <h6 class="fw-semibold">Get Results</h6>
-                    <p class="text-secondary small">See detailed comparison and winner</p>
+                    <p class="text-secondary small">Analysis engine compares and picks a winner</p>
         </div>
     </div>
 </div>

@@ -1,5 +1,23 @@
 {% extends "base.html" %}
 {% block title %}Create Account - Verses1{% endblock %}
+
+{% block extra_css %}
+<style>
+[data-theme="dark"] h2 {
+    color: var(--text-primary);
+}
+[data-theme="dark"] p {
+    color: var(--text-secondary);
+}
+[data-theme="dark"] .form-label {
+    color: var(--text-primary);
+}
+[data-theme="dark"] span {
+    color: var(--text-primary);
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">

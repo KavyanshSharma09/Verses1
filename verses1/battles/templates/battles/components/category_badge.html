@@ -1,0 +1,4 @@
+<span class="category-badge-icon" style="--category-color: {{ category.color }}; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; background: color-mix(in srgb, {{ category.color }} 15%, transparent); font-size: 0.75rem;">
+    {{ icon_svg|safe }}
+    {% if show_name %}<span style="color: {{ category.color }};">{{ category.name }}</span>{% endif %}
+</span>

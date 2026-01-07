@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Problems | Verses1{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="d-flex align-items-center gap-2">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            Problem Library
+        </h2>
+        <a href="{% url 'create_battle' %}" class="btn btn-primary d-flex align-items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 8v8M8 12h8"/>
+            </svg>
+            Create Battle
+        </a>
+    </div>
+    
+    <!-- Difficulty Filter -->
+    <div class="mb-4">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-secondary active" data-filter="all">All</button>
+            <button type="button" class="btn btn-outline-success" data-filter="easy">Easy</button>
+            <button type="button" class="btn btn-outline-warning" data-filter="medium">Medium</button>
+            <button type="button" class="btn btn-outline-danger" data-filter="hard">Hard</button>
+        </div>
+    </div>
+    
+    <!-- Problems Grid -->
+    <div class="row" id="problemsGrid">
+        {% for problem in problems %}
+        <div class="col-md-6 col-lg-4 mb-4 problem-card" data-difficulty="{{ problem.difficulty }}">
+            <div class="card h-100 battle-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ problem.title }}</h5>
+                        <span class="badge {% if problem.difficulty == 'easy' %}bg-success{% elif problem.difficulty == 'medium' %}bg-warning{% else %}bg-danger{% endif %}">
+                            {{ problem.get_difficulty_display }}
+                        </span>
+                    </div>
+                    <p class="card-text text-muted small">
+                        {{ problem.description|truncatewords:30 }}
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <small class="text-muted d-flex align-items-center gap-2">
+                            <span class="d-flex align-items-center gap-1">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polyline points="12 6 12 12 16 14"/>
+                                </svg>
+                                {{ problem.time_limit_seconds }}s
+                            </span>
+                            <span class="d-flex align-items-center gap-1">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="6" width="20" height="12" rx="2"/>
+                                    <path d="M6 12h4"/>
+                                </svg>
+                                {{ problem.memory_limit_mb }}MB
+                            </span>
+                        </small>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'problem_detail' problem.slug %}" class="btn btn-outline-primary btn-sm flex-fill">
+                            View Details
+                        </a>
+                        <a href="{% url 'create_battle' %}?problem={{ problem.slug }}" class="btn btn-primary btn-sm flex-fill d-flex align-items-center justify-content-center gap-1">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/>
+                                <path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                                <path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/>
+                                <path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/>
+                                <path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/>
+                                <path d="M15.5 19H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/>
+                                <path d="M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z"/>
+                                <path d="M8.5 5H10V3.5C10 2.67 9.33 2 8.5 2S7 2.67 7 3.5 7.67 5 8.5 5z"/>
+                            </svg>
+                            Battle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                No problems available yet. Check back later!
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.querySelectorAll('[data-filter]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const filter = this.dataset.filter;
+        
+        // Update button states
+        document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Filter cards
+        document.querySelectorAll('.problem-card').forEach(card => {
+            if (filter === 'all' || card.dataset.difficulty === filter) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

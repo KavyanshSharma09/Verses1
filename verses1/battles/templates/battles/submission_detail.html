@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Submission #{{ submission.id }} - {{ problem.title }} | Verses1{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+<style>
+.submission-header {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+.submission-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 24px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+.status-accepted {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+.status-failed {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+.stat-box {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+}
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+}
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+.code-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+.code-header {
+    background: var(--bg);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.code-header h5 {
+    margin: 0;
+    font-weight: 600;
+}
+.CodeMirror {
+    height: auto;
+    max-height: 500px;
+    font-size: 14px;
+}
+.test-results {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+.test-result-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.test-result-item:last-child {
+    border-bottom: none;
+}
+.test-passed {
+    color: #10b981;
+}
+.test-failed {
+    color: #ef4444;
+}
+
+/* Dark mode */
+[data-theme="dark"] .submission-header {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+[data-theme="dark"] .stat-box {
+    background: rgba(51, 65, 85, 0.5);
+}
+[data-theme="dark"] .stat-value {
+    color: var(--text-primary);
+}
+[data-theme="dark"] .stat-label {
+    color: #94a3b8;
+}
+[data-theme="dark"] .code-section {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+[data-theme="dark"] .code-header {
+    background: rgba(30, 41, 59, 0.5);
+    border-bottom-color: var(--border-color);
+}
+[data-theme="dark"] .code-header h5 {
+    color: var(--text-primary);
+}
+[data-theme="dark"] .test-results {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+[data-theme="dark"] .test-result-item {
+    border-bottom-color: var(--border-color);
+    color: var(--text-secondary);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'practice' %}">Practice</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'practice_problem' problem.slug %}">{{ problem.title }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'submission_history' problem.slug %}">Submissions</a></li>
+            <li class="breadcrumb-item active">#{{ submission.id }}</li>
+        </ol>
+    </nav>
+
+    <!-- Submission Header -->
+    <div class="submission-header">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <h3 class="fw-bold mb-2">{{ problem.title }}</h3>
+                <span class="submission-status {% if submission.all_tests_passed %}status-accepted{% else %}status-failed{% endif %}">
+                    {% if submission.all_tests_passed %}
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Accepted
+                    {% else %}
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                    Failed ({{ submission.tests_passed }}/{{ submission.tests_total }})
+                    {% endif %}
+                </span>
+            </div>
+            <div class="text-end">
+                <small class="text-muted d-block">Submitted</small>
+                <span>{{ submission.submitted_at|date:"M d, Y H:i" }}</span>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-value">{{ submission.tests_passed }}/{{ submission.tests_total }}</div>
+                <div class="stat-label">Tests Passed</div>
+            </div>
+            {% if submission.avg_execution_time %}
+            <div class="stat-box">
+                <div class="stat-value">{{ submission.avg_execution_time|floatformat:3 }}s</div>
+                <div class="stat-label">Avg Runtime</div>
+            </div>
+            {% endif %}
+            {% if submission.time_complexity_estimate %}
+            <div class="stat-box">
+                <div class="stat-value">{{ submission.time_complexity_estimate }}</div>
+                <div class="stat-label">Time Complexity</div>
+            </div>
+            {% endif %}
+            {% if submission.total_score %}
+            <div class="stat-box">
+                <div class="stat-value">{{ submission.total_score|floatformat:0 }}</div>
+                <div class="stat-label">Score</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Code Section -->
+    <div class="code-section">
+        <div class="code-header">
+            <h5>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+                    <polyline points="16 18 22 12 16 6"/>
+                    <polyline points="8 6 2 12 8 18"/>
+                </svg>
+                Submitted Code
+            </h5>
+            <button class="btn btn-sm btn-outline-secondary" onclick="copyCode()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Copy
+            </button>
+        </div>
+        <textarea id="codeDisplay">{{ submission.code_content }}</textarea>
+    </div>
+
+    <!-- Test Results -->
+    {% if submission.test_results %}
+    <div class="test-results">
+        <div class="code-header">
+            <h5>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                Test Results
+            </h5>
+        </div>
+        {% for test in submission.test_results %}
+        <div class="test-result-item">
+            <div class="d-flex align-items-center gap-2">
+                {% if test.passed %}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span class="test-passed">Test {{ forloop.counter }} Passed</span>
+                {% else %}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                <span class="test-failed">Test {{ forloop.counter }} Failed</span>
+                {% endif %}
+            </div>
+            {% if test.execution_time %}
+            <small class="text-muted">{{ test.execution_time|floatformat:4 }}s</small>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Actions -->
+    <div class="d-flex gap-2 mt-4">
+        <a href="{% url 'practice_problem' problem.slug %}" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+                <polyline points="16 18 22 12 16 6"/>
+                <polyline points="8 6 2 12 8 18"/>
+            </svg>
+            Try Again
+        </a>
+        <a href="{% url 'submission_history' problem.slug %}" class="btn btn-outline-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            All Submissions
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<script>
+// Initialize CodeMirror for code display
+const codeDisplay = CodeMirror.fromTextArea(document.getElementById('codeDisplay'), {
+    mode: 'python',
+    theme: 'dracula',
+    lineNumbers: true,
+    readOnly: true,
+    viewportMargin: Infinity
+});
+
+function copyCode() {
+    navigator.clipboard.writeText(codeDisplay.getValue());
+    // Show feedback
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    setTimeout(() => btn.innerHTML = originalText, 2000);
+}
+</script>
+{% endblock %}

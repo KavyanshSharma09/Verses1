@@ -7,8 +7,97 @@ from django.utils import timezone
 def generate_battle_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
 
+
+class Category(models.Model):
+    """Category/tag for problems"""
+    name = models.CharField(max_length=50, unique=True)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(blank=True)
+    icon = models.CharField(max_length=50, blank=True, help_text="SVG icon class or name")
+    color = models.CharField(max_length=7, default='#3b82f6', help_text="Hex color for the category")
+    
+    class Meta:
+        verbose_name_plural = "Categories"
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+
+
+class ProblemStatement(models.Model):
+    """Problem that users solve in a battle"""
+    DIFFICULTY_CHOICES = [
+        ('easy', 'Easy'),
+        ('medium', 'Medium'),
+        ('hard', 'Hard'),
+    ]
+    
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(help_text="Problem description in Markdown")
+    input_format = models.TextField(help_text="Description of input format")
+    output_format = models.TextField(help_text="Description of expected output format")
+    constraints = models.TextField(help_text="Constraints (e.g., 1 <= n <= 10^5)")
+    
+    example_input = models.TextField(help_text="Example input to show users")
+    example_output = models.TextField(help_text="Expected output for example")
+    example_explanation = models.TextField(blank=True, help_text="Explanation of the example")
+    
+    difficulty = models.CharField(max_length=10, choices=DIFFICULTY_CHOICES, default='easy')
+    categories = models.ManyToManyField(Category, related_name='problems', blank=True)
+    time_limit_seconds = models.FloatField(default=2.0, help_text="Time limit per test case")
+    memory_limit_mb = models.IntegerField(default=256, help_text="Memory limit in MB")
+    
+    function_signature = models.CharField(
+        max_length=200, 
+        help_text="Function signature users must implement, e.g., 'def solution(nums, target):'"
+    )
+    starter_code = models.TextField(
+        blank=True,
+        help_text="Starter code template for users"
+    )
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['difficulty', 'title']
+    
+    def __str__(self):
+        return f"[{self.get_difficulty_display()}] {self.title}"
+    
+    def get_visible_test_cases(self):
+        return self.test_cases.filter(is_hidden=False)
+    
+    def get_all_test_cases(self):
+        return self.test_cases.all()
+
+
+class TestCase(models.Model):
+    """Test case for a problem"""
+    problem = models.ForeignKey(ProblemStatement, on_delete=models.CASCADE, related_name='test_cases')
+    
+    input_data = models.TextField(help_text="Input to pass to the function")
+    expected_output = models.TextField(help_text="Expected output/return value")
+    
+    is_hidden = models.BooleanField(default=False, help_text="Hidden tests are not shown to users")
+    is_sample = models.BooleanField(default=False, help_text="Sample tests shown in problem description")
+    
+    order = models.IntegerField(default=0, help_text="Order of test case execution")
+    points = models.IntegerField(default=10, help_text="Points for passing this test")
+    
+    class Meta:
+        ordering = ['order']
+    
+    def __str__(self):
+        hidden_str = " (hidden)" if self.is_hidden else ""
+        return f"Test {self.order} for {self.problem.title}{hidden_str}"
+
+
 class Battle(models.Model):
     battle_code = models.CharField(max_length=8, unique=True, default=generate_battle_code)
+    problem = models.ForeignKey(ProblemStatement, on_delete=models.CASCADE, related_name='battles', null=True, blank=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_battles')
     opponent = models.ForeignKey(User, on_delete=models.CASCADE, related_name='joined_battles', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -16,7 +105,9 @@ class Battle(models.Model):
     winner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='won_battles')
 
     def __str__(self):
-        return f"Battle {self.battle_code} - {self.creator.username} vs {self.opponent.username if self.opponent else 'Waiting'}"
+        problem_title = self.problem.title if self.problem else 'No Problem'
+        return f"Battle {self.battle_code} - {problem_title} - {self.creator.username} vs {self.opponent.username if self.opponent else 'Waiting'}"
+
 
 class CodeSubmission(models.Model):
     battle = models.ForeignKey(Battle, on_delete=models.CASCADE, related_name='submissions')
@@ -25,6 +116,15 @@ class CodeSubmission(models.Model):
     code_file = models.FileField(upload_to='code_submissions/', null=True, blank=True)
     submitted_at = models.DateTimeField(auto_now_add=True)
     
+    # Test case results
+    tests_passed = models.IntegerField(default=0)
+    tests_total = models.IntegerField(default=0)
+    all_tests_passed = models.BooleanField(default=False)
+    test_results = models.JSONField(null=True, blank=True, help_text="Detailed results for each test case")
+    avg_execution_time = models.FloatField(null=True, blank=True, help_text="Average execution time across tests")
+    max_memory_used = models.FloatField(null=True, blank=True, help_text="Max memory used in MB")
+    
+    # Analysis scores
     complexity_score = models.FloatField(null=True, blank=True)
     performance_score = models.FloatField(null=True, blank=True)
     readability_score = models.FloatField(null=True, blank=True)
@@ -156,3 +256,62 @@ class LoginActivity(models.Model):
 
     def __str__(self):
         return f"Login: {self.user.username} @ {self.timestamp.isoformat()}"
+
+
+class PracticeSubmission(models.Model):
+    """Practice mode submission - solo problem solving"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='practice_submissions')
+    problem = models.ForeignKey(ProblemStatement, on_delete=models.CASCADE, related_name='practice_submissions')
+    code_content = models.TextField()
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    
+    # Test results
+    tests_passed = models.IntegerField(default=0)
+    tests_total = models.IntegerField(default=0)
+    all_tests_passed = models.BooleanField(default=False)
+    test_results = models.JSONField(null=True, blank=True)
+    avg_execution_time = models.FloatField(null=True, blank=True)
+    
+    # Analysis scores (optional)
+    complexity_score = models.FloatField(null=True, blank=True)
+    performance_score = models.FloatField(null=True, blank=True)
+    total_score = models.FloatField(null=True, blank=True)
+    time_complexity_estimate = models.CharField(max_length=20, null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-submitted_at']
+    
+    def __str__(self):
+        status = "✓" if self.all_tests_passed else "✗"
+        return f"{status} {self.user.username} - {self.problem.title}"
+
+
+class UserStats(models.Model):
+    """User statistics for leaderboard"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='stats')
+    
+    # Battle stats
+    battles_played = models.IntegerField(default=0)
+    battles_won = models.IntegerField(default=0)
+    battles_lost = models.IntegerField(default=0)
+    battles_drawn = models.IntegerField(default=0)
+    
+    # Practice stats
+    problems_solved = models.IntegerField(default=0)
+    easy_solved = models.IntegerField(default=0)
+    medium_solved = models.IntegerField(default=0)
+    hard_solved = models.IntegerField(default=0)
+    
+    # Rating
+    rating = models.IntegerField(default=1200)
+    
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Stats for {self.user.username}"
+    
+    @property
+    def win_rate(self):
+        if self.battles_played == 0:
+            return 0
+        return round((self.battles_won / self.battles_played) * 100, 1)

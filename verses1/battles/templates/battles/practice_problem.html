@@ -1,0 +1,1232 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load category_tags %}
+
+{% block title %}{{ problem.title }} - Practice{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="practice-problem-container">
+    <!-- Left Panel: Problem Description -->
+    <div class="problem-panel">
+        <div class="problem-header">
+            <a href="{% url 'practice' %}" class="back-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back to Problems
+            </a>
+            
+            <div class="problem-title-section">
+                <h1>{{ problem.title }}</h1>
+                <div class="problem-badges">
+                    <span class="difficulty difficulty-{{ problem.difficulty }}">{{ problem.get_difficulty_display }}</span>
+                    {% for cat in problem.categories.all %}
+                    <span class="category-badge" style="--category-color: {{ cat.color }}">{% category_icon cat.icon size=14 color=cat.color %} {{ cat.name }}</span>
+                    {% endfor %}
+                    {% if user_solved %}
+                    <span class="solved-badge">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                            <polyline points="22 4 12 14.01 9 11.01"/>
+                        </svg>
+                        Solved
+                    </span>
+                    {% endif %}
+                    <a href="{% url 'submission_history' problem.slug %}" class="submissions-link">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        Submissions
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="problem-content">
+            <div class="description-section">
+                <h3>Description</h3>
+                <div class="description-text">{{ problem.description|linebreaks }}</div>
+            </div>
+            
+            {% if problem.input_format %}
+            <div class="description-section">
+                <h3>Input Format</h3>
+                <div class="format-text">{{ problem.input_format|linebreaks }}</div>
+            </div>
+            {% endif %}
+            
+            {% if problem.output_format %}
+            <div class="description-section">
+                <h3>Output Format</h3>
+                <div class="format-text">{{ problem.output_format|linebreaks }}</div>
+            </div>
+            {% endif %}
+            
+            {% if problem.constraints %}
+            <div class="description-section">
+                <h3>Constraints</h3>
+                <div class="constraints-text">{{ problem.constraints|linebreaks }}</div>
+            </div>
+            {% endif %}
+            
+            <div class="description-section">
+                <h3>Example Test Cases</h3>
+                {% for test in problem.test_cases.all|slice:":2" %}
+                <div class="example-case">
+                    <div class="example-header">Example {{ forloop.counter }}</div>
+                    <div class="example-grid">
+                        <div class="example-input">
+                            <strong>Input:</strong>
+                            <pre>{{ test.input_data }}</pre>
+                        </div>
+                        <div class="example-output">
+                            <strong>Expected Output:</strong>
+                            <pre>{{ test.expected_output }}</pre>
+                        </div>
+                    </div>
+                    {% if test.explanation %}
+                    <div class="example-explanation">
+                        <strong>Explanation:</strong> {{ test.explanation }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Panel: Code Editor -->
+    <div class="editor-panel">
+        <div class="editor-header">
+            <div class="language-selector">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="16 18 22 12 16 6"/>
+                    <polyline points="8 6 2 12 8 18"/>
+                </svg>
+                <span>Python 3</span>
+            </div>
+            <div class="editor-actions">
+                <button type="button" class="btn-reset" onclick="resetCode()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                        <path d="M3 3v5h5"/>
+                    </svg>
+                    Reset
+                </button>
+            </div>
+        </div>
+        
+        <div class="code-editor-container">
+            <textarea id="code-editor">{{ problem.starter_code|default:"# Write your solution here\n\ndef solve():\n    pass\n\nsolve()" }}</textarea>
+        </div>
+        
+        <div class="editor-footer">
+            <div class="test-results" id="testResults">
+                <div class="results-placeholder">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    <p>Run tests to see results</p>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button type="button" class="btn-run" onclick="runTests()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    Run Tests
+                </button>
+                <button type="button" class="btn-submit" onclick="submitSolution()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 2L11 13"/>
+                        <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+                    </svg>
+                    Submit Solution
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="modal" style="display: none;">
+    <div class="modal-content success-modal">
+        <div class="success-icon">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+        </div>
+        <h2>Congratulations!</h2>
+        <p id="successMessage">You solved the problem!</p>
+        <div class="success-stats" id="successStats"></div>
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="closeModal()">Stay Here</button>
+            <a href="{% url 'practice' %}" class="btn-primary">Continue Practicing</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.practice-problem-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    height: calc(100vh - 120px);
+    margin: -1rem -1rem;
+    padding: 1rem;
+}
+
+.problem-panel {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.problem-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.back-link:hover {
+    color: var(--primary-color);
+}
+
+.problem-title-section h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.problem-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.difficulty {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+}
+
+.difficulty-easy { background: #dcfce7; color: #166534; }
+.difficulty-medium { background: #fef3c7; color: #92400e; }
+.difficulty-hard { background: #fee2e2; color: #991b1b; }
+
+.category-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--category-color, #6366f1) 15%, transparent);
+    color: var(--category-color, #6366f1);
+}
+
+.solved-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    background: #dcfce7;
+    color: #166534;
+    border-radius: 4px;
+}
+
+.submissions-link {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    background: rgba(99, 102, 241, 0.15);
+    color: #6366f1;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.submissions-link:hover {
+    background: rgba(99, 102, 241, 0.25);
+    color: #4f46e5;
+}
+
+.problem-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+}
+
+.description-section {
+    margin-bottom: 1.5rem;
+}
+
+.description-section h3 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.description-text,
+.format-text,
+.constraints-text {
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.example-case {
+    background: var(--hover-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.example-header {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--primary-color);
+}
+
+.example-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.example-input pre,
+.example-output pre {
+    background: var(--card-bg);
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+}
+
+.example-explanation {
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Editor Panel */
+.editor-panel {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--hover-bg);
+}
+
+.language-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.editor-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-reset {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.btn-reset:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.code-editor-container {
+    flex: 1;
+    overflow: hidden;
+}
+
+.code-editor-container .CodeMirror {
+    height: 100%;
+    font-size: 14px;
+    font-family: 'Fira Code', monospace;
+}
+
+.editor-footer {
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.test-results {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 1rem;
+    background: var(--hover-bg);
+}
+
+.results-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.results-placeholder p {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.test-result-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border-color);
+}
+
+.test-result-item.passed {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.test-result-item.failed {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.test-result-icon {
+    flex-shrink: 0;
+}
+
+.test-result-info {
+    flex: 1;
+}
+
+.test-result-title {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.test-result-details {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}
+
+.test-result-details strong {
+    color: var(--text-primary);
+}
+
+.test-code {
+    background: var(--hover-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    color: var(--text-primary);
+}
+
+.test-code.output-passed {
+    background: rgba(16, 185, 129, 0.15);
+}
+
+.test-code.output-failed {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--card-bg);
+}
+
+.btn-run,
+.btn-submit {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-run {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-run:hover {
+    background: var(--border-color);
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+.btn-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-run:disabled,
+.btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.success-icon {
+    margin-bottom: 1rem;
+}
+
+.success-modal h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #10b981;
+}
+
+.success-modal p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.success-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--hover-bg);
+    border-radius: 8px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.btn-secondary {
+    padding: 0.75rem 1.5rem;
+    background: var(--hover-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.btn-primary {
+    padding: 0.75rem 1.5rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Loading state */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .practice-problem-container {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+    
+    .problem-panel,
+    .editor-panel {
+        height: auto;
+        min-height: 400px;
+    }
+    
+    .code-editor-container .CodeMirror {
+        height: 400px;
+    }
+}
+
+/* Dark mode */
+[data-theme="dark"] .difficulty-easy {
+    background: rgba(22, 163, 74, 0.2);
+    color: #4ade80;
+}
+
+[data-theme="dark"] .difficulty-medium {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+}
+
+[data-theme="dark"] .difficulty-hard {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+}
+
+[data-theme="dark"] .solved-badge {
+    background: rgba(22, 163, 74, 0.2);
+    color: #4ade80;
+}
+
+[data-theme="dark"] .submissions-link {
+    background: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
+}
+[data-theme="dark"] .submissions-link:hover {
+    background: rgba(99, 102, 241, 0.3);
+    color: #c7d2fe;
+}
+
+/* Dark mode test results */
+[data-theme="dark"] .test-results {
+    background: rgba(30, 30, 45, 0.8);
+}
+
+[data-theme="dark"] .test-result-item {
+    background: #1e1e2e;
+    border-color: #3d3d5c;
+}
+
+[data-theme="dark"] .test-result-item.passed {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: #10b981;
+}
+
+[data-theme="dark"] .test-result-item.failed {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: #ef4444;
+}
+
+[data-theme="dark"] .test-result-title {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .test-result-details {
+    color: #cbd5e1;
+}
+
+[data-theme="dark"] .test-result-details strong {
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .test-result-details code {
+    background: rgba(55, 55, 75, 0.8) !important;
+    color: #e2e8f0;
+    border: 1px solid rgba(100, 100, 130, 0.3);
+}
+
+[data-theme="dark"] .test-code {
+    background: rgba(55, 55, 75, 0.9);
+    color: #f1f5f9;
+    border: 1px solid rgba(100, 100, 130, 0.4);
+}
+
+[data-theme="dark"] .test-code.output-passed {
+    background: rgba(16, 185, 129, 0.25);
+    color: #6ee7b7;
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+[data-theme="dark"] .test-code.output-failed {
+    background: rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.4);
+}
+
+[data-theme="dark"] .results-summary {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .results-placeholder {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] span,
+[data-theme="dark"] strong {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .text-muted {
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .card-body span,
+[data-theme="dark"] .card-body strong {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] p {
+    color: var(--text-secondary);
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+<!-- CodeMirror Addons -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+<style>
+/* Dark mode for CodeMirror autocomplete */
+[data-theme="dark"] .CodeMirror-hints {
+    background: #1e293b;
+    border: 1px solid #334155;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+[data-theme="dark"] .CodeMirror-hint {
+    color: #e2e8f0;
+}
+[data-theme="dark"] .CodeMirror-hint-active,
+[data-theme="dark"] li.CodeMirror-hint-active {
+    background: #6366f1;
+    color: #ffffff;
+}
+</style>
+
+<script>
+const starterCode = `{{ problem.starter_code|default:"# Write your solution here\n\ndef solve():\n    pass\n\nsolve()"|escapejs }}`;
+let editor;
+
+// Python keywords and built-ins for autocomplete
+const pythonKeywords = [
+    // Keywords
+    'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue',
+    'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from',
+    'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not',
+    'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield',
+    'True', 'False', 'None',
+    // Built-in functions
+    'abs', 'all', 'any', 'bin', 'bool', 'bytes', 'chr', 'dict', 'divmod',
+    'enumerate', 'filter', 'float', 'format', 'frozenset', 'hash', 'hex',
+    'input', 'int', 'isinstance', 'iter', 'len', 'list', 'map', 'max',
+    'min', 'next', 'oct', 'ord', 'pow', 'print', 'range', 'repr', 'reversed',
+    'round', 'set', 'slice', 'sorted', 'str', 'sum', 'tuple', 'type', 'zip',
+    // Common modules
+    'collections', 'itertools', 'functools', 'heapq', 'bisect', 'math', 're',
+    // Common methods
+    'append', 'extend', 'insert', 'remove', 'pop', 'clear', 'index', 'count',
+    'sort', 'reverse', 'copy', 'items', 'keys', 'values', 'get', 'update',
+    'add', 'discard', 'union', 'intersection', 'difference',
+    'split', 'join', 'strip', 'lower', 'upper', 'replace', 'find', 'startswith', 'endswith',
+    // Data structures
+    'defaultdict', 'Counter', 'deque', 'OrderedDict', 'namedtuple',
+];
+
+// Custom Python hint function
+CodeMirror.registerHelper('hint', 'python', function(cm) {
+    const cur = cm.getCursor();
+    const token = cm.getTokenAt(cur);
+    const start = token.start;
+    const end = cur.ch;
+    const word = token.string.slice(0, end - start);
+    
+    const list = pythonKeywords.filter(function(item) {
+        return item.toLowerCase().startsWith(word.toLowerCase());
+    });
+    
+    // Also add words from the document
+    const docWords = cm.getValue().match(/[a-zA-Z_]\w*/g) || [];
+    docWords.forEach(function(w) {
+        if (w.toLowerCase().startsWith(word.toLowerCase()) && list.indexOf(w) === -1) {
+            list.push(w);
+        }
+    });
+    
+    return {
+        list: list.slice(0, 15),
+        from: CodeMirror.Pos(cur.line, start),
+        to: CodeMirror.Pos(cur.line, end)
+    };
+});
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+        mode: 'python',
+        theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dracula' : 'default',
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        indentWithTabs: false,
+        lineWrapping: true,
+        autofocus: true,
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        smartIndent: true,
+        electricChars: true,
+        extraKeys: {
+            'Tab': function(cm) {
+                if (cm.somethingSelected()) {
+                    cm.indentSelection('add');
+                } else {
+                    cm.replaceSelection('    ', 'end');
+                }
+            },
+            'Shift-Tab': function(cm) {
+                cm.indentSelection('subtract');
+            },
+            'Ctrl-Space': 'autocomplete',
+            'Ctrl-/': 'toggleComment',
+            'Cmd-/': 'toggleComment'
+        },
+        hintOptions: {
+            completeSingle: false
+        }
+    });
+    
+    // Auto-show hints while typing
+    editor.on('inputRead', function(cm, change) {
+        if (change.text[0].match(/[a-zA-Z_]/)) {
+            cm.showHint({
+                hint: CodeMirror.hint.python,
+                completeSingle: false
+            });
+        }
+    });
+    
+    // Listen for theme changes
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'data-theme') {
+                const theme = document.documentElement.getAttribute('data-theme');
+                editor.setOption('theme', theme === 'dark' ? 'dracula' : 'default');
+            }
+        });
+    });
+    
+    observer.observe(document.documentElement, { attributes: true });
+});
+
+function resetCode() {
+    if (confirm('Reset code to starter template?')) {
+        editor.setValue(starterCode);
+    }
+}
+
+function runTests() {
+    const code = editor.getValue();
+    const resultsDiv = document.getElementById('testResults');
+    
+    resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    
+    document.querySelectorAll('.btn-run, .btn-submit').forEach(btn => btn.disabled = true);
+    
+    fetch('{% url "practice_run_tests" problem.slug %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ code: code })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            resultsDiv.innerHTML = `
+                <div class="test-result-item failed">
+                    <div class="test-result-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="15" y1="9" x2="9" y2="15"/>
+                            <line x1="9" y1="9" x2="15" y2="15"/>
+                        </svg>
+                    </div>
+                    <div class="test-result-info">
+                        <div class="test-result-title">Error</div>
+                        <div class="test-result-details">${data.error}</div>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        // Handle both 'results' and 'test_results' keys
+        const results = data.results || data.test_results || [];
+        displayTestResults(results, data);
+    })
+    .catch(error => {
+        resultsDiv.innerHTML = `
+            <div class="test-result-item failed">
+                <div class="test-result-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                </div>
+                <div class="test-result-info">
+                    <div class="test-result-title">Error</div>
+                    <div class="test-result-details">${error.message}</div>
+                </div>
+            </div>
+        `;
+    })
+    .finally(() => {
+        document.querySelectorAll('.btn-run, .btn-submit').forEach(btn => btn.disabled = false);
+    });
+}
+
+function displayTestResults(results, data) {
+    const resultsDiv = document.getElementById('testResults');
+    let html = '';
+    
+    // Handle syntax errors
+    if (data && data.syntax_error) {
+        resultsDiv.innerHTML = `
+            <div class="test-result-item failed">
+                <div class="test-result-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                </div>
+                <div class="test-result-info">
+                    <div class="test-result-title">Syntax Error</div>
+                    <div class="test-result-details">${data.syntax_error}</div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    // Handle forbidden imports
+    if (data && data.has_forbidden_imports) {
+        resultsDiv.innerHTML = `
+            <div class="test-result-item failed">
+                <div class="test-result-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                </div>
+                <div class="test-result-info">
+                    <div class="test-result-title">Forbidden Import</div>
+                    <div class="test-result-details">The module '${data.forbidden_import_name}' is not allowed for security reasons.</div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    if (!results || results.length === 0) {
+        resultsDiv.innerHTML = `
+            <div class="test-result-item">
+                <div class="test-result-info">
+                    <div class="test-result-title">No test cases found</div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    const passed = results.filter(r => r.passed).length;
+    const total = results.length;
+    
+    // Show summary with execution time if available
+    const avgTime = data && data.avg_execution_time ? `${(data.avg_execution_time * 1000).toFixed(2)}ms` : '';
+    const maxMem = data && data.max_memory_used ? `${data.max_memory_used.toFixed(2)}MB` : '';
+    
+    html += `
+        <div class="results-summary" style="margin-bottom: 1rem; padding: 0.75rem; background: ${passed === total ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <span style="font-weight: 600; color: ${passed === total ? '#10b981' : '#ef4444'};">
+                    ${passed === total ? 'All Tests Passed!' : `${passed}/${total} Tests Passed`}
+                </span>
+                ${avgTime || maxMem ? `
+                <div style="display: flex; gap: 1rem; font-size: 0.85rem; color: var(--text-secondary);">
+                    ${avgTime ? `<span>⏱ ${avgTime}</span>` : ''}
+                    ${maxMem ? `<span>💾 ${maxMem}</span>` : ''}
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+    
+    results.forEach((result, index) => {
+        const statusClass = result.passed ? 'passed' : 'failed';
+        const icon = result.passed ? 
+            `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>` :
+            `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>`;
+        
+        // Handle different result formats
+        const errorMsg = result.error_message || result.error || '';
+        const expected = result.expected_output || result.expected || '';
+        const actual = result.actual_output || result.actual || '';
+        const input = result.input_data || result.input || '';
+        const execTime = result.execution_time ? `${(result.execution_time * 1000).toFixed(2)}ms` : '';
+        
+        html += `
+            <div class="test-result-item ${statusClass}">
+                <div class="test-result-icon">${icon}</div>
+                <div class="test-result-info" style="flex: 1;">
+                    <div class="test-result-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="test-result-title">Test Case ${index + 1}</div>
+                        ${execTime ? `<span style="font-size: 0.75rem; color: var(--text-secondary);">${execTime}</span>` : ''}
+                    </div>
+                    <div class="test-result-details" style="margin-top: 0.5rem;">
+                        ${errorMsg ? `
+                            <div style="color: #ef4444; margin-bottom: 0.5rem;"><strong>Error:</strong> ${errorMsg}</div>
+                        ` : ''}
+                        ${input ? `
+                            <div style="margin-bottom: 0.25rem;"><strong>Input:</strong> <code class="test-code">${escapeHtml(input)}</code></div>
+                        ` : ''}
+                        <div style="margin-bottom: 0.25rem;"><strong>Expected:</strong> <code class="test-code">${escapeHtml(expected)}</code></div>
+                        <div><strong>Output:</strong> <code class="test-code ${result.passed ? 'output-passed' : 'output-failed'}">${escapeHtml(actual)}</code></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    resultsDiv.innerHTML = html;
+}
+
+function submitSolution() {
+    const code = editor.getValue();
+    const resultsDiv = document.getElementById('testResults');
+    
+    resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+    
+    document.querySelectorAll('.btn-run, .btn-submit').forEach(btn => btn.disabled = true);
+    
+    fetch('{% url "practice_submit" problem.slug %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ code: code })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            // Handle error with test results if available
+            const testResult = data.test_result || {};
+            const results = testResult.test_results || [];
+            if (results.length > 0) {
+                displayTestResults(results, testResult);
+            } else {
+                resultsDiv.innerHTML = `
+                    <div class="test-result-item failed">
+                        <div class="test-result-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                        </div>
+                        <div class="test-result-info">
+                            <div class="test-result-title">Error</div>
+                            <div class="test-result-details">${data.error}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            return;
+        }
+        
+        // Handle both 'results' and 'test_results' keys
+        const results = data.results || data.test_results || [];
+        displayTestResults(results, data);
+        
+        // Check for success (submit endpoint returns 'success', run tests returns 'all_passed')
+        if (data.success || data.all_passed) {
+            showSuccessModal(data);
+        }
+    })
+    .catch(error => {
+        resultsDiv.innerHTML = `
+            <div class="test-result-item failed">
+                <div class="test-result-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                </div>
+                <div class="test-result-info">
+                    <div class="test-result-title">Error</div>
+                    <div class="test-result-details">${error.message}</div>
+                </div>
+            </div>
+        `;
+    })
+    .finally(() => {
+        document.querySelectorAll('.btn-run, .btn-submit').forEach(btn => btn.disabled = false);
+    });
+}
+
+function showSuccessModal(data) {
+    const modal = document.getElementById('successModal');
+    const message = document.getElementById('successMessage');
+    const stats = document.getElementById('successStats');
+    
+    if (data.first_solve) {
+        message.textContent = 'First time solving this problem! Great job!';
+    } else if (data.success) {
+        message.textContent = data.message || 'Solution accepted!';
+    } else {
+        message.textContent = 'All test cases passed!';
+    }
+    
+    const testsPassed = data.tests_passed || data.passed || '?';
+    const testsTotal = data.tests_total || data.total || '?';
+    const score = data.score || data.total_score || 0;
+    const execTime = data.execution_time || data.avg_execution_time;
+    const execTimeStr = execTime ? `${(execTime * 1000).toFixed(2)}ms` : '-';
+    
+    stats.innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; color: #10b981;">${testsPassed}/${testsTotal}</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Tests Passed</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary-color);">${score}</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Score</div>
+        </div>
+        <div style="text-align: center;">
+            <div style="font-size: 1.5rem; font-weight: bold; color: #f59e0b;">${execTimeStr}</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Avg Time</div>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('successModal').style.display = 'none';
+}
+
+// Close modal on background click
+document.getElementById('successModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+</script>
+{% endblock %}

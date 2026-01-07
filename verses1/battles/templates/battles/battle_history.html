@@ -1,9 +1,76 @@
 {% extends "base.html" %}
 {% block title %}Battle History - Verses1{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Dark mode styles for battle history */
+[data-theme="dark"] h2 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] code {
+    background: rgba(51, 65, 85, 0.8) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .badge[style*="background: #f1f5f9"] {
+    background: rgba(51, 65, 85, 0.8) !important;
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .feature-icon {
+    background: linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(139,92,246,0.2) 100%);
+}
+
+[data-theme="dark"] h5 {
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .table {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .table td {
+    color: #94a3b8;
+}
+
+[data-theme="dark"] .table th {
+    color: #64748b;
+}
+
+[data-theme="dark"] .text-muted {
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] p {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .table-hover tbody tr:hover {
+    background: rgba(51, 65, 85, 0.5) !important;
+}
+
+[data-theme="dark"] .table tbody tr {
+    background: transparent;
+}
+
+[data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+    background: rgba(51, 65, 85, 0.3);
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-5">
     <div class="text-center mb-4">
-        <h2 class="fw-bold">📜 Battle History</h2>
+        <h2 class="fw-bold d-flex align-items-center justify-content-center gap-2">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 8v4l3 3"/>
+                <circle cx="12" cy="12" r="10"/>
+            </svg>
+            Battle History
+        </h2>
         <p class="text-secondary">Your completed battles and results</p>
     </div>
     
@@ -43,7 +110,17 @@
                                     {% if row.result.is_draw %}
                                         <span class="badge" style="background: #f1f5f9; color: var(--text-secondary);">Draw</span>
                                     {% elif row.battle.winner == user %}
-                                        <span class="badge bg-success">🏆 Won</span>
+                                        <span class="badge bg-success d-flex align-items-center gap-1">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                                                <path d="M4 22h16"/>
+                                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+                                            </svg>
+                                            Won
+                                        </span>
                                     {% else %}
                                         <span class="badge bg-danger">Lost</span>
                                     {% endif %}
@@ -67,7 +144,12 @@
     {% else %}
     <div class="card">
         <div class="card-body text-center py-5">
-            <div class="display-5 mb-3">🎮</div>
+            <div class="feature-icon mx-auto mb-3">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+                    <polyline points="17 2 12 7 7 2"/>
+                </svg>
+            </div>
             <h5 class="fw-semibold mb-2">No battles yet</h5>
             <p class="text-secondary mb-4">You haven't completed any battles yet. Start your first one!</p>
             <a href="{% url 'create_battle' %}" class="btn btn-primary">Create Battle</a>
