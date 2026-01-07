@@ -134,6 +134,55 @@
     border-bottom-color: var(--border-color);
     color: var(--text-secondary);
 }
+
+/* Custom Python syntax highlighting for dark mode */
+[data-theme="dark"] .CodeMirror {
+    background: #212121 !important;
+    color: #eeffff !important;
+}
+[data-theme="dark"] .CodeMirror-gutters {
+    background: #212121 !important;
+    border-right: 1px solid #333 !important;
+}
+[data-theme="dark"] .CodeMirror-linenumber {
+    color: #545454 !important;
+}
+[data-theme="dark"] .cm-keyword {
+    color: #c792ea !important;
+}
+[data-theme="dark"] .cm-def {
+    color: #82aaff !important;
+}
+[data-theme="dark"] .cm-variable,
+[data-theme="dark"] .cm-variable-2 {
+    color: #eeffff !important;
+}
+[data-theme="dark"] .cm-string,
+[data-theme="dark"] .cm-string-2 {
+    color: #c3e88d !important;
+}
+[data-theme="dark"] .cm-number {
+    color: #f78c6c !important;
+}
+[data-theme="dark"] .cm-operator {
+    color: #89ddff !important;
+}
+[data-theme="dark"] .cm-comment {
+    color: #546e7a !important;
+    font-style: italic;
+}
+[data-theme="dark"] .cm-builtin {
+    color: #ffcb6b !important;
+}
+[data-theme="dark"] .cm-property {
+    color: #82aaff !important;
+}
+[data-theme="dark"] .cm-atom {
+    color: #f78c6c !important;
+}
+[data-theme="dark"] .cm-meta {
+    color: #ffcb6b !important;
+}
 </style>
 {% endblock %}
 

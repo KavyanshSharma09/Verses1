@@ -792,6 +792,93 @@
     background: #6366f1;
     color: #ffffff;
 }
+
+/* Custom Python syntax highlighting for dark mode */
+[data-theme="dark"] .CodeMirror {
+    background: #212121 !important;
+    color: #eeffff !important;
+}
+[data-theme="dark"] .CodeMirror-gutters {
+    background: #212121 !important;
+    border-right: 1px solid #333 !important;
+}
+[data-theme="dark"] .CodeMirror-linenumber {
+    color: #545454 !important;
+}
+[data-theme="dark"] .CodeMirror-cursor {
+    border-left: 2px solid #ffcc00 !important;
+}
+[data-theme="dark"] .CodeMirror-selected {
+    background: rgba(128, 203, 196, 0.2) !important;
+}
+/* Keywords: def, if, else, for, while, return, class, etc. */
+[data-theme="dark"] .cm-keyword {
+    color: #c792ea !important;
+}
+/* Definitions: function names, class names */
+[data-theme="dark"] .cm-def {
+    color: #82aaff !important;
+}
+/* Variables */
+[data-theme="dark"] .cm-variable {
+    color: #eeffff !important;
+}
+[data-theme="dark"] .cm-variable-2 {
+    color: #eeffff !important;
+}
+[data-theme="dark"] .cm-variable-3 {
+    color: #f78c6c !important;
+}
+/* Strings */
+[data-theme="dark"] .cm-string {
+    color: #c3e88d !important;
+}
+[data-theme="dark"] .cm-string-2 {
+    color: #c3e88d !important;
+}
+/* Numbers */
+[data-theme="dark"] .cm-number {
+    color: #f78c6c !important;
+}
+/* Operators */
+[data-theme="dark"] .cm-operator {
+    color: #89ddff !important;
+}
+/* Comments */
+[data-theme="dark"] .cm-comment {
+    color: #546e7a !important;
+    font-style: italic;
+}
+/* Built-in functions: print, len, range, etc. */
+[data-theme="dark"] .cm-builtin {
+    color: #ffcb6b !important;
+}
+/* Properties/attributes */
+[data-theme="dark"] .cm-property {
+    color: #82aaff !important;
+}
+/* Punctuation */
+[data-theme="dark"] .cm-punctuation {
+    color: #89ddff !important;
+}
+/* Brackets matching */
+[data-theme="dark"] .CodeMirror-matchingbracket {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+    font-weight: bold;
+}
+/* Boolean: True, False, None */
+[data-theme="dark"] .cm-atom {
+    color: #f78c6c !important;
+}
+/* Meta (decorators) */
+[data-theme="dark"] .cm-meta {
+    color: #ffcb6b !important;
+}
+/* Active line */
+[data-theme="dark"] .CodeMirror-activeline-background {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
 </style>
 
 <script>
