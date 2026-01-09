@@ -2,14 +2,16 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from battles import views
+from battles.auth_views import RateLimitedLoginView, register
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('accounts/', include('allauth.urls')),  # For email verification and password reset
     path('', views.home, name='home'),
-    path('register/', views.register, name='register'),
-    path('login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('register/', register, name='register'),
+    path('login/', RateLimitedLoginView.as_view(template_name='registration/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     
     # Problems
