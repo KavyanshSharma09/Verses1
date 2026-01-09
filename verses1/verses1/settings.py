@@ -21,7 +21,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-a672mx!_(+m)dl
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = [
-    'verses1-4.onrender.com',
+    'verses1.onrender.com',
     '.onrender.com',
     'localhost',
     '127.0.0.1',
@@ -153,7 +153,7 @@ ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 
 # CSRF settings for production
 CSRF_TRUSTED_ORIGINS = [
-    'https://verses1-4.onrender.com',
+    'https://verses1.onrender.com',
     'https://*.onrender.com',
 ]
 

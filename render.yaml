@@ -5,7 +5,7 @@ services:
     plan: free
     rootDir: verses1
     buildCommand: ./build.sh
-    startCommand: cd verses1 && gunicorn verses1.wsgi:application
+    startCommand: gunicorn verses1.wsgi:application
     envVars:
       - key: DJANGO_SECRET_KEY
         generateValue: true
@@ -13,3 +13,17 @@ services:
         value: "False"
       - key: PYTHON_VERSION
         value: "3.11.0"
+      - key: GOOGLE_CLIENT_ID
+        sync: false  # Set this in Render dashboard
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false  # Set this in Render dashboard
+      - key: GITHUB_CLIENT_ID
+        sync: false  # Set this in Render dashboard
+      - key: GITHUB_CLIENT_SECRET
+        sync: false  # Set this in Render dashboard
+    dependsOn:
+      - verses1-db
+  - type: pgsql
+    name: verses1-db
+    plan: free
+    ipAllowList: []  # Only accessible by other services in this project
