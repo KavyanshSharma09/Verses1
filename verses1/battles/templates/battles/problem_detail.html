@@ -3,10 +3,28 @@
 
 {% block title %}{{ problem.title }} | Verses1{% endblock %}
 
+{% block extra_css %}
+<style>
+    .problem-description p {
+        font-size: 1rem;
+        line-height: 1.8;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    .problem-description h5 {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    .problem-description .card-body {
+        padding: 1.5rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-lg-8 problem-description">
             <!-- Problem Header -->
             <div class="card mb-4">
                 <div class="card-body">
