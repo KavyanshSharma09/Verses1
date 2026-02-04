@@ -41,9 +41,6 @@ INSTALLED_APPS = [
     'upload',
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.github',
 ]
 
 SITE_ID = 1
@@ -55,7 +52,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'allauth.account.middleware.AccountMiddleware',  # Required for django-allauth
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -151,6 +148,11 @@ ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = False
 ACCOUNT_SESSION_REMEMBER = True  # Remember Me functionality
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 
+# Session settings - Keep users logged in for 1 year
+SESSION_COOKIE_AGE = 365 * 24 * 60 * 60  # 1 year in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Don't expire when browser closes
+SESSION_SAVE_EVERY_REQUEST = True  # Refresh session on each request
+
 # CSRF settings for production
 CSRF_TRUSTED_ORIGINS = [
     'https://verses1.onrender.com',
@@ -164,25 +166,5 @@ if not DEBUG:
 # Rate Limiting
 RATELIMIT_ENABLE = True
 
-# OAuth Configuration
-# Set these environment variables in production:
-# GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
-# GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': ['profile', 'email'],
-        'AUTH_PARAMS': {'access_type': 'online'},
-        'OAUTH_PKCE_ENABLED': True,
-    },
-    'github': {
-        'SCOPE': ['user:email'],
-    }
-}
-
-# Social account settings
-SOCIALACCOUNT_AUTO_SIGNUP = True
-SOCIALACCOUNT_LOGIN_ON_GET = True
-SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
-SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 LOGIN_URL = '/login/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'

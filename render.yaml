@@ -13,17 +13,3 @@ services:
         value: "False"
       - key: PYTHON_VERSION
         value: "3.11.0"
-      - key: GOOGLE_CLIENT_ID
-        sync: false  # Set this in Render dashboard
-      - key: GOOGLE_CLIENT_SECRET
-        sync: false  # Set this in Render dashboard
-      - key: GITHUB_CLIENT_ID
-        sync: false  # Set this in Render dashboard
-      - key: GITHUB_CLIENT_SECRET
-        sync: false  # Set this in Render dashboard
-    dependsOn:
-      - verses1-db
-  - type: pgsql
-    name: verses1-db
-    plan: free
-    ipAllowList: []  # Only accessible by other services in this project
