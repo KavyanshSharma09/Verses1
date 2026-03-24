@@ -21,22 +21,31 @@ It extends my earlier project **PyOptimizer** (which analyzed a single file for 
 
 ### 🏆 Battle Mode
 - **1v1 Code Battles** – Challenge friends or random opponents with unique 8-character battle codes
+- **Precise Outcome Engine** – Real-time Winner, Defeat, and Draw dynamic attribution logic for both operators
 - **Real-time Winner Declaration** – Based on comprehensive code analysis
 - **Battle History** – Track past duels and improvements
 - **Advanced Scoring System** – Multi-factor comparison including complexity, performance, quality, and security
 
 ### 📚 Problem Bank
 - **Curated Problem Statements** – Problems with difficulty levels (Easy, Medium, Hard)
+- **Live Search Filtering** – Instantly find modules with real-time dynamic search bars
 - **Category System** – Filter problems by tags/categories with custom icons and colors
-- **Test Cases** – Visible sample tests and hidden validation tests
+- **Test Cases** – Visible sample tests and rigorously curated hidden validation tests
 - **Constraints & Examples** – Complete problem descriptions with input/output formats
 - **Function Signatures** – Predefined signatures with starter code templates
 
 ### 🎯 Practice Mode
 - **Solo Problem Solving** – Practice without the pressure of battles
+- **Live Practice Search** – Locate practice modules elegantly using interactive UI queries
 - **Instant Feedback** – Run tests and see results immediately
 - **Submission History** – Track your progress on each problem
 - **Difficulty Progression** – Work your way from easy to hard problems
+
+### 🎨 Immersive UI & UX
+- **Glassmorphism Design** – Next-generation frosted glass styling across cards, data metrics, and terminals
+- **Ambient Decorations** – Animated, beautifully glowing thematic background objects that bring the arena to life
+- **Solid High-Contrast Terminals** – Legible coding environment built to showcase execution algorithms seamlessly
+- **Client-Side Module Searching** – Microsecond-fast JavaScript-based module queries without refreshing the page
 
 ### 📊 Advanced Code Analysis Engine
 - **Complexity Metrics** – Cyclomatic & cognitive complexity, maintainability index
