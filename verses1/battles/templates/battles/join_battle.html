@@ -3,61 +3,125 @@
 
 {% block extra_css %}
 <style>
-[data-theme="dark"] h2 {
-    color: var(--text-primary);
+.join-shell {
+    max-width: 420px;
+    margin: 3rem auto;
+}
+.join-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.join-header .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--tertiary);
+    margin-bottom: 0.5rem;
+}
+.join-header h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+.join-header p {
+    color: var(--on-surface-variant);
+    font-size: 0.9rem;
+}
+.join-card {
+    background: var(--surface-container);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    padding: 2rem;
+    position: relative;
+}
+.join-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+    background: var(--tertiary);
+}
+.code-input {
+    font-family: 'JetBrains Mono', monospace !important;
+    text-align: center;
+    font-size: 1.5rem !important;
+    letter-spacing: 0.3em !important;
+    text-transform: uppercase;
+    padding: 1rem !important;
+}
+/* Background blob decorations to fill empty space */
+.join-shell {
+    max-width: 420px;
+    margin: 3rem auto;
+    position: relative;
+    z-index: 2;
+}
+.bg-decor {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: 0;
+    opacity: 0.35;
+    pointer-events: none;
+}
+.decor-1 {
+    width: 250px; height: 250px;
+    background: var(--tertiary); /* Matches join page accent */
+    top: 5%; left: 10%;
+}
+.decor-2 {
+    width: 200px; height: 200px;
+    background: var(--secondary);
+    bottom: -5%; right: -5%;
+}
+.decor-3 {
+    width: 300px; height: 300px;
+    background: rgba(0, 218, 243, 0.4);
+    top: 50%; left: -20%;
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5 col-lg-4">
-            <div class="text-center mb-4">
-                <div class="feature-icon mx-auto mb-3">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/>
-                    </svg>
+<div class="bg-decor decor-1"></div>
+<div class="bg-decor decor-2"></div>
+<div class="bg-decor decor-3"></div>
+
+<div class="join-shell">
+    <div class="join-header">
+        <div class="eyebrow">Protocol // Arena Link</div>
+        <h2>Join Battle</h2>
+        <p>Enter the battle code provided by another operator.</p>
+    </div>
+
+    <div class="join-card">
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="id_battle_code" class="form-label">Battle Code</label>
+                <input type="text"
+                       name="battle_code"
+                       id="id_battle_code"
+                       class="form-control code-input {% if form.battle_code.errors %}is-invalid{% endif %}"
+                       placeholder="XXXXXXXX"
+                       maxlength="8">
+                {% if form.battle_code.errors %}
+                <div class="invalid-feedback" style="text-align:center;">
+                    {% for error in form.battle_code.errors %}{{ error }}{% endfor %}
                 </div>
-                <h2 class="fw-bold">Join Battle</h2>
-                <p class="text-secondary">Enter a battle code to join</p>
+                {% endif %}
+                <div style="text-align:center;font-size:0.7rem;color:var(--outline);margin-top:0.5rem;font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;">Enter the 8-character battle code</div>
             </div>
-            <div class="card">
-                <div class="card-body p-4">
-                    <form method="post">
-                        {% csrf_token %}
-                        <div class="mb-4">
-                            <label for="id_battle_code" class="form-label">Battle Code</label>
-                            <input type="text" 
-                                   name="battle_code" 
-                                   id="id_battle_code"
-                                   class="form-control form-control-lg text-center {% if form.battle_code.errors %}is-invalid{% endif %}"
-                                   placeholder="XXXXXXXX"
-                                   maxlength="8"
-                                   style="letter-spacing: 0.2em; font-family: monospace; text-transform: uppercase;">
-                            {% if form.battle_code.errors %}
-                            <div class="invalid-feedback">
-                                {% for error in form.battle_code.errors %}{{ error }}{% endfor %}
-                            </div>
-                            {% endif %}
-                            <div class="form-text text-center">Enter the 8-character battle code</div>
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-2">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <path d="M12 16l4-4-4-4M8 12h8"/>
-                                </svg>
-                                Join Battle
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <div class="text-center mt-4">
-                <a href="{% url 'home' %}" class="text-secondary">← Back to Home</a>
-            </div>
-        </div>
+            <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" style="padding:0.85rem;">
+                <span class="material-symbols-outlined" style="font-size:18px;">login</span>
+                Enter Arena
+            </button>
+        </form>
+    </div>
+    <div class="text-center mt-3">
+        <a href="{% url 'home' %}" style="font-size:0.82rem;color:var(--outline);">← Back to Home</a>
     </div>
 </div>
 {% endblock %}

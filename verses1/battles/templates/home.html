@@ -1,251 +1,461 @@
 {% extends "base.html" %}
 
-{% block title %}Verses1 - Code Battle Arena{% endblock %}
+{% block title %}Verses1 - The Digital Crucible{% endblock %}
 
 {% block extra_css %}
 <style>
-/* Dark mode for home page */
-[data-theme="dark"] .hero-section {
+.landing-hero {
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, 
+        rgba(0, 218, 243, 0.06) 0%, 
+        rgba(11, 19, 38, 1) 100%);
+}
+.landing-hero::before {
+    content: '';
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    opacity: 0.4;
+}
+.protocol-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid rgba(0, 218, 243, 0.4);
+    color: var(--primary);
+    margin-bottom: 2rem;
+    background: rgba(0, 218, 243, 0.05);
+}
+.hero-headline {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 800;
+    line-height: 0.95;
+    margin-bottom: 1.5rem;
+    color: var(--on-surface);
+}
+.hero-headline .accent {
+    color: var(--primary);
+    display: block;
+}
+.hero-desc {
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    color: var(--on-surface-variant);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+.hero-desc em {
+    color: var(--primary);
+    font-style: italic;
+    font-weight: 600;
+}
+.hero-actions {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+}
+.hero-actions .btn { min-width: 180px; }
+.btn-explore {
+    background: var(--surface-container-highest);
+    color: var(--on-surface);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 700;
+    font-family: 'Space Grotesk', sans-serif;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    border-radius: 1px;
+    padding: 0.6rem 1.5rem;
+    transition: all 0.2s;
+}
+.btn-explore:hover {
+    background: var(--surface-bright);
+    color: var(--on-surface);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Code Preview */
+.code-preview {
+    max-width: 850px;
+    margin: 0 auto 0;
+    border-radius: 12px 12px 0 0;
+    overflow: hidden;
+    border: 1px solid var(--outline-variant);
+    border-bottom: none;
+    background: var(--surface-container-low);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+    position: relative;
+    z-index: 1;
+}
+.code-preview-bar {
+    background: var(--surface-container-high);
+    padding: 0.6rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--outline-variant);
+}
+.code-dot { width: 10px; height: 10px; border-radius: 50%; }
+.code-dot.r { background: #ff5f57; }
+.code-dot.y { background: #febc2e; }
+.code-dot.g { background: #28c840; }
+.code-preview-bar span {
+    margin-left: 0.5rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--on-surface-variant);
+    letter-spacing: 0.05em;
+}
+.code-preview-body {
+    display: grid;
+    grid-template-columns: 1fr auto;
     background: transparent;
 }
+.code-text {
+    padding: 1.2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.8;
+    overflow-x: auto;
+    color: var(--on-surface);
+}
+.code-text .ln { color: var(--outline-variant); margin-right: 1.5rem; user-select: none; }
+.code-text .kw { color: #c792ea; }
+.code-text .fn { color: #82aaff; }
+.code-text .st { color: #c3e88d; }
+.code-text .cm { color: #546e7a; font-style: italic; }
+.code-text .op { color: #89ddff; }
+.code-text .num { color: #f78c6c; }
+.code-text .bi { color: #ffcb6b; }
+.code-metrics {
+    padding: 1.2rem;
+    border-left: 1px solid var(--outline-variant);
+    background: var(--surface-container);
+    min-width: 200px;
+}
+.code-metrics-item {
+    margin-bottom: 1.2rem;
+}
+.code-metrics-item .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--on-surface);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.25rem;
+}
+.code-metrics-item .val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+.code-metrics-item .bar {
+    margin-top: 0.3rem;
+    height: 3px;
+    background: var(--surface-container-high);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.code-metrics-item .bar-fill {
+    height: 100%;
+    border-radius: 2px;
+}
+.code-metrics-item .bar-fill.cyan { background: var(--primary); }
+.code-metrics-item .bar-fill.amber { background: var(--tertiary); }
 
-[data-theme="dark"] .badge-pill {
-    background: linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(139,92,246,0.2) 100%);
-    border-color: rgba(99, 102, 241, 0.3);
-    color: #a5b4fc;
+/* Execution Summary */
+.execution-summary {
+    max-width: 850px;
+    margin: 0 auto 3rem;
+    background: var(--surface-container-low);
+    padding: 0.8rem 1.2rem;
+    border: 1px solid var(--outline-variant);
+    border-top: none;
+    text-align: left;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    position: relative;
+    z-index: 1;
+    border-radius: 0 0 12px 12px;
 }
 
-[data-theme="dark"] .feature-card h5,
-[data-theme="dark"] .action-card h4,
-[data-theme="dark"] .step-card h6 {
-    color: var(--text-primary);
+.hero-stack {
+    position: relative;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+}
+.hero-stack > * { margin: 0 auto; }
+
+/* Stats Band */
+.stats-band {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    max-width: 850px;
+    margin: 0 auto 3rem;
+    text-align: center;
+}
+.stat-big {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+    font-weight: 800;
+    font-style: italic;
+    color: var(--primary);
+}
+.stat-desc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--outline);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 0.25rem;
 }
 
-[data-theme="dark"] .feature-card p,
-[data-theme="dark"] .action-card p,
-[data-theme="dark"] .step-card p {
-    color: var(--text-secondary);
+/* Feature Modules */
+.modules-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.module-card {
+    background: var(--surface-container);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2rem;
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+}
+.module-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 3px;
+}
+.module-card:nth-child(1)::before { background: var(--primary); }
+.module-card:nth-child(2)::before { background: var(--secondary); }
+.module-card:nth-child(3)::before { background: var(--tertiary); }
+.module-card:nth-child(4)::before { background: var(--primary); }
+.module-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.5rem;
+}
+.module-card h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+}
+.module-card p {
+    color: var(--on-surface-variant);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+.module-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+.module-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--on-surface-variant);
+    border-radius: 1px;
+}
+.module-icon {
+    position: absolute;
+    bottom: 1rem;
+    right: 1.5rem;
+    opacity: 0.06;
+    font-size: 100px;
+    color: var(--on-surface);
 }
 
-[data-theme="dark"] h1,
-[data-theme="dark"] h3 {
-    color: var(--text-primary);
+/* CTA */
+.cta-section {
+    text-align: center;
+    padding: 4rem 2rem;
+    margin-top: 2rem;
+    background: linear-gradient(0deg, rgba(0, 218, 243, 0.04), transparent);
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+.cta-headline {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 800;
+    color: var(--on-surface);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+}
+.cta-desc {
+    color: var(--on-surface-variant);
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-[data-theme="dark"] .lead {
-    color: var(--text-secondary) !important;
-}
-
-[data-theme="dark"] span {
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] strong {
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] .text-muted {
-    color: #94a3b8 !important;
+@media (max-width: 768px) {
+    .modules-grid { grid-template-columns: 1fr; }
+    .code-preview-body { grid-template-columns: 1fr; }
+    .code-metrics { border-left: none; border-top: 1px solid rgba(255,255,255,0.05); }
+    .stats-band { grid-template-columns: 1fr; gap: 1rem; }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <!-- Hero Section -->
-    <div class="hero-section text-center mb-5">
-        <div class="hero-badge mb-3">
-            <span class="badge-pill">New: Practice Mode + Dark Theme</span>
-        </div>
-        <h1 class="display-4 fw-bold mb-3">
-            Code. Compete. <span class="text-gradient">Conquer.</span>
-        </h1>
-        <p class="lead text-secondary mb-4" style="max-width: 600px; margin: 0 auto;">
-            Challenge developers in real-time 1v1 coding battles. Solve problems, pass test cases, and let our analysis engine determine the winner.
-        </p>
-        
+<section class="landing-hero">
+    <div class="protocol-badge">System Protocol v1.04 Initialized</div>
+    <h1 class="hero-headline">
+        THE DIGITAL CRUCIBLE:<span class="accent">ENGINEERED FOR PRECISION.</span>
+    </h1>
+    <p class="hero-desc">
+        Optimize Python code where execution bottlenecks meet elite competitive engineering. Not just correct. <em>Efficient.</em>
+    </p>
+
+    <div class="hero-actions">
         {% if user.is_authenticated %}
-        <div class="d-flex gap-3 justify-content-center mt-4">
-            <a href="{% url 'create_battle' %}" class="btn btn-primary btn-lg px-4">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="M12 8v8M8 12h8"/>
-                </svg>
-                Create Battle
-            </a>
-            <a href="{% url 'join_battle' %}" class="btn btn-outline-primary btn-lg px-4">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
-                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/>
-                </svg>
-                Join Battle
-            </a>
-        </div>
+            <a href="{% url 'create_battle' %}" class="btn btn-primary btn-lg">Create Battle</a>
+            <a href="{% url 'join_battle' %}" class="btn btn-outline-primary btn-lg" style="padding: 0.6rem 1.5rem; border-radius: 1px;">Join Battle</a>
+            <a href="{% url 'problem_list' %}" class="btn btn-explore btn-lg">Explore Problems</a>
         {% else %}
-        <div class="d-flex gap-3 justify-content-center mt-4">
-            <a href="{% url 'register' %}" class="btn btn-primary btn-lg px-4">
-                Get Started Free
-            </a>
-            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg px-4">
-                Sign In
-            </a>
-        </div>
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Join The Crucible</a>
+            <a href="{% url 'problem_list' %}" class="btn btn-explore btn-lg">Explore Problems</a>
         {% endif %}
     </div>
 
-    <!-- Features Grid -->
-    <div class="row g-4 mt-5">
-        <div class="col-md-6 col-lg-3">
-            <div class="card feature-card h-100 p-4 text-center">
-                <div class="feature-icon mb-3">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                    </svg>
+    <div class="hero-stack">
+        <!-- Code Preview Terminal -->
+        <div class="code-preview">
+            <div class="code-preview-bar">
+                <span class="code-dot r"></span>
+                <span class="code-dot y"></span>
+                <span class="code-dot g"></span>
+                <span>verses_cli --profile performance_run.py</span>
+            </div>
+            <div class="code-preview-body">
+                <div class="code-text">
+                    <div><span class="ln">01</span><span class="kw">import</span> numpy <span class="kw">as</span> np</div>
+                    <div><span class="ln">02</span><span class="kw">def</span> <span class="fn">optimize_gradient</span> (weights, data):</div>
+                    <div><span class="ln">03</span>    error <span class="op">=</span> np.dot(weights, data.T)</div>
+                    <div><span class="ln">04</span>    <span class="cm"># Bottleneck detected: Halstead Volume High</span></div>
+                    <div><span class="ln">05</span>    update <span class="op">=</span> alpha <span class="op">*</span> (error <span class="op">*</span> data)</div>
+                    <div><span class="ln">06</span>    <span class="kw">return</span> weights <span class="op">-</span> update</div>
                 </div>
-                <h5 class="fw-semibold mb-2">Complexity Analysis</h5>
-                <p class="text-secondary small mb-0">
-                    Cyclomatic & cognitive complexity metrics with maintainability scoring.
-                </p>
+                <div class="code-metrics">
+                    <div class="code-metrics-item">
+                        <div class="label">Complexity</div>
+                        <div class="val">O(N log N)</div>
+                    </div>
+                    <div class="code-metrics-item">
+                        <div class="label">Memory Profile</div>
+                        <div class="val">8.2 GB/s</div>
+                        <div class="bar"><div class="bar-fill cyan" style="width:75%"></div></div>
+                    </div>
+                    <div class="code-metrics-item">
+                        <div class="label">Bottlenecks</div>
+                        <div class="bar"><div class="bar-fill amber" style="width:60%"></div></div>
+                        <div style="font-size:0.6rem;color:var(--tertiary);margin-top:0.2rem;font-family:'JetBrains Mono',monospace;">AST DEPTH: CRITICAL</div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-md-6 col-lg-3">
-            <div class="card feature-card h-100 p-4 text-center">
-                <div class="feature-icon mb-3">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                    </svg>
-                </div>
-                <h5 class="fw-semibold mb-2">Performance</h5>
-                <p class="text-secondary small mb-0">
-                    Real-time execution with time & space complexity estimation.
-                </p>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-3">
-            <div class="card feature-card h-100 p-4 text-center">
-                <div class="feature-icon mb-3">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                    </svg>
-                </div>
-                <h5 class="fw-semibold mb-2">Sandboxed</h5>
-                <p class="text-secondary small mb-0">
-                    Secure code execution with forbidden import detection.
-                </p>
-            </div>
-        </div>
-        <div class="col-md-6 col-lg-3">
-            <div class="card feature-card h-100 p-4 text-center">
-                <div class="feature-icon mb-3">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                        <polyline points="10 9 9 9 8 9"/>
-                    </svg>
-                </div>
-                <h5 class="fw-semibold mb-2">Test Cases</h5>
-                <p class="text-secondary small mb-0">
-                    Validate solutions against hidden & visible test cases.
-                </p>
+
+        <!-- Execution Summary -->
+        <div class="execution-summary">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--on-surface-variant);">
+                <span style="color:var(--primary);">»</span> <strong style="color:var(--on-surface);">EXECUTION SUMMARY</strong><br>
+                Runtime: <span style="color:var(--primary);">12.4ms</span> (98th percentile)<br>
+                Memory: 44.2MB O(N) Complexity<br>
+                <span style="color:var(--secondary);">CRITICAL SUCCESS: Passed all 42 test cases.</span>
             </div>
         </div>
     </div>
+</section>
 
-    {% if user.is_authenticated %}
-    <!-- Quick Actions -->
-    <div class="row g-4 mt-5">
-        <div class="col-md-4">
-            <div class="card action-card p-4 h-100">
-                <div class="d-flex align-items-start gap-3">
-                    <div class="action-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M12 8v8M8 12h8"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="fw-semibold mb-2">Create a Battle</h4>
-                        <p class="text-secondary mb-3">
-                            Pick a problem, start a new battle, and share the code with your opponent.
-                        </p>
-                        <a href="{% url 'create_battle' %}" class="btn btn-primary">Create Battle</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card action-card p-4 h-100">
-                <div class="d-flex align-items-start gap-3">
-                    <div class="action-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="fw-semibold mb-2">Join a Battle</h4>
-                        <p class="text-secondary mb-3">
-                            Enter a battle code to join an existing challenge and compete against another coder.
-                        </p>
-                        <a href="{% url 'join_battle' %}" class="btn btn-outline-primary">Join Battle</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card action-card p-4 h-100" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border-color: rgba(99, 102, 241, 0.2);">
-                <div class="d-flex align-items-start gap-3">
-                    <div class="action-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                            <path d="M2 17l10 5 10-5"/>
-                            <path d="M2 12l10 5 10-5"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <h4 class="fw-semibold mb-2">Practice Mode</h4>
-                        <p class="text-secondary mb-3">
-                            Solve problems at your own pace. Track progress and improve your skills.
-                        </p>
-                        <a href="{% url 'practice' %}" class="btn btn-primary">Start Practicing</a>
-                    </div>
-                </div>
-            </div>
-        </div>
+<!-- Stats Band -->
+<div class="stats-band">
+    <div>
+        <div class="stat-big">10+ ELITE</div>
+        <div class="stat-desc">Operators Active Weekly</div>
     </div>
-    {% endif %}
-
-    <!-- How it works -->
-    <div class="mt-5 pt-4">
-        <h3 class="text-center fw-semibold mb-4">How It Works</h3>
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="text-center step-card">
-                    <div class="step-number">
-                        <span>1</span>
-                    </div>
-                    <h6 class="fw-semibold">Create or Join</h6>
-                    <p class="text-secondary small">Start a new battle or enter a code to join</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="text-center step-card">
-                    <div class="step-number">
-                        <span>2</span>
-                    </div>
-                    <h6 class="fw-semibold">Solve & Test</h6>
-                    <p class="text-secondary small">Write code and pass all test cases to submit</p>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="text-center step-card">
-                    <div class="step-number">
-                        <span>3</span>
-                    </div>
-                    <h6 class="fw-semibold">Get Results</h6>
-                    <p class="text-secondary small">Analysis engine compares and picks a winner</p>
-        </div>
+    <div>
+        <div class="stat-big">68+ PRODUCTION</div>
+        <div class="stat-desc">Grade Problems Curated</div>
+    </div>
+    <div>
+        <div class="stat-big">O(N LOG N)</div>
+        <div class="stat-desc">Solutions Architected Daily</div>
     </div>
 </div>
+
+<!-- Feature Modules -->
+<div class="modules-grid">
+    <div class="module-card">
+        <div class="module-eyebrow">Engine Module 01</div>
+        <h3>Advanced Code Analysis</h3>
+        <p>Deep-dive into your solution's structural integrity. Our engine performs AST parsing, Big-O detection, and calculates Halstead metrics in real-time.</p>
+        <div class="module-tags">
+            <span class="module-tag">AST Parsing</span>
+            <span class="module-tag">Big-O Detection</span>
+            <span class="module-tag">Halstead Metrics</span>
+        </div>
+        <span class="material-symbols-outlined module-icon">analytics</span>
+    </div>
+    <div class="module-card">
+        <div class="module-eyebrow" style="color:var(--secondary);">Protocol 02</div>
+        <h3>Competitive Dueling</h3>
+        <p>Real-time optimization battles. See your opponent's resource consumption while you code. Victory is determined by cycles, not just clock time.</p>
+        <span class="material-symbols-outlined module-icon">swords</span>
+    </div>
+    <div class="module-card">
+        <div class="module-eyebrow" style="color:var(--tertiary);">Repository 03</div>
+        <h3>The Problem Bank</h3>
+        <p>Access 68+ curated challenges designed to break intermediate habits. From low-level memory management to distributed systems architecture.</p>
+        <span class="material-symbols-outlined module-icon">library_books</span>
+    </div>
+    <div class="module-card">
+        <div class="module-eyebrow">Analytics 04</div>
+        <h3>Quantified Profiles</h3>
+        <p>Your performance isn't a score; it's an architecture. Track performance trends, algorithmic versatility, and technical debt across your entire portfolio.</p>
+        <span class="material-symbols-outlined module-icon">monitoring</span>
+    </div>
+</div>
+
+<!-- CTA -->
+<section class="cta-section">
+    <h2 class="cta-headline">Ready to Enter the Crucible?</h2>
+    <p class="cta-desc">Join the elite tier of engineers refining the boundaries of high-performance code.</p>
+    {% if user.is_authenticated %}
+        <a href="{% url 'create_battle' %}" class="btn btn-primary btn-lg">Initialize Session</a>
+        <a href="{% url 'join_battle' %}" class="btn btn-outline-primary btn-lg">Join Session</a>
+    {% else %}
+        <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Initialize Account</a>
+    {% endif %}
+</section>
 {% endblock %}

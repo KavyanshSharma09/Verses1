@@ -194,13 +194,20 @@
                     
                     <hr>
                     
-                    <a href="{% url 'create_battle' %}?problem={{ problem.slug }}" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M12 8v8M8 12h8"/>
-                        </svg>
-                        Create Battle with this Problem
-                    </a>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="{% url 'practice_problem' problem.slug %}" class="btn btn-practice w-100">
+                            <span class="material-symbols-outlined" style="font-size:18px;">play_arrow</span>
+                            Practice Solo
+                        </a>
+                        <form action="{% url 'create_battle' %}" method="post" class="w-100">
+                            {% csrf_token %}
+                            <input type="hidden" name="problem" value="{{ problem.id }}">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <span class="material-symbols-outlined" style="font-size:18px;">swords</span>
+                                Start Duel
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

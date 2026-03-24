@@ -3,158 +3,132 @@
 
 {% block extra_css %}
 <style>
-/* Dark mode styles for battle history */
-[data-theme="dark"] h2 {
-    color: var(--text-primary);
+.history-header {
+    margin-bottom: 1.5rem;
 }
-
-[data-theme="dark"] code {
-    background: rgba(51, 65, 85, 0.8) !important;
-    color: var(--text-primary) !important;
-    border: 1px solid var(--border-color);
+.history-header .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 0.3rem;
 }
-
-[data-theme="dark"] .badge[style*="background: #f1f5f9"] {
-    background: rgba(51, 65, 85, 0.8) !important;
-    color: #94a3b8 !important;
+.history-header h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
 }
-
-[data-theme="dark"] .feature-icon {
-    background: linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(139,92,246,0.2) 100%);
+.history-header p {
+    color: var(--on-surface-variant);
+    font-size: 0.85rem;
 }
-
-[data-theme="dark"] h5 {
-    color: var(--text-primary);
+.battle-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--primary);
+    padding: 0.2rem 0.5rem;
+    background: rgba(0, 218, 243, 0.08);
+    border: 1px solid rgba(0, 218, 243, 0.15);
+    border-radius: 1px;
+    letter-spacing: 0.08em;
 }
-
-[data-theme="dark"] .table {
-    color: var(--text-secondary);
+.you-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    background: rgba(0, 218, 243, 0.1);
+    color: var(--primary);
+    padding: 0.1rem 0.35rem;
+    border-radius: 1px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
-
-[data-theme="dark"] .table td {
-    color: #94a3b8;
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--surface-container);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
 }
-
-[data-theme="dark"] .table th {
-    color: #64748b;
+.empty-state h5 {
+    font-size: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
 }
-
-[data-theme="dark"] .text-muted {
-    color: #94a3b8 !important;
-}
-
-[data-theme="dark"] p {
-    color: var(--text-secondary);
-}
-
-[data-theme="dark"] .table-hover tbody tr:hover {
-    background: rgba(51, 65, 85, 0.5) !important;
-}
-
-[data-theme="dark"] .table tbody tr {
-    background: transparent;
-}
-
-[data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
-    background: rgba(51, 65, 85, 0.3);
+.empty-state p {
+    color: var(--outline);
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="text-center mb-4">
-        <h2 class="fw-bold d-flex align-items-center justify-content-center gap-2">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 8v4l3 3"/>
-                <circle cx="12" cy="12" r="10"/>
-            </svg>
-            Battle History
-        </h2>
-        <p class="text-secondary">Your completed battles and results</p>
-    </div>
-    
-    {% if battle_rows %}
-    <div class="card">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Battle Code</th>
-                            <th>Creator</th>
-                            <th>Opponent</th>
-                            <th>Result</th>
-                            <th>Date</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in battle_rows %}
-                        <tr>
-                            <td>
-                                <code style="background: #f1f5f9; padding: 4px 8px; border-radius: 4px; color: var(--text);">
-                                    {{ row.battle.battle_code }}
-                                </code>
-                            </td>
-                            <td>
-                                {{ row.battle.creator.username }}
-                                {% if row.battle.creator == user %}<span class="badge bg-primary ms-1">You</span>{% endif %}
-                            </td>
-                            <td>
-                                {{ row.battle.opponent.username }}
-                                {% if row.battle.opponent == user %}<span class="badge bg-primary ms-1">You</span>{% endif %}
-                            </td>
-                            <td>
-                                {% if row.result %}
-                                    {% if row.result.is_draw %}
-                                        <span class="badge" style="background: #f1f5f9; color: var(--text-secondary);">Draw</span>
-                                    {% elif row.battle.winner == user %}
-                                        <span class="badge bg-success d-flex align-items-center gap-1">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
-                                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
-                                                <path d="M4 22h16"/>
-                                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
-                                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
-                                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
-                                            </svg>
-                                            Won
-                                        </span>
-                                    {% else %}
-                                        <span class="badge bg-danger">Lost</span>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="badge" style="background: #f1f5f9; color: var(--text-secondary);">In Progress</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-secondary">{{ row.battle.created_at|date:"M d, Y" }}</td>
-                            <td>
-                                <a href="{% url 'battle_result' row.battle.id %}" class="btn btn-sm btn-outline-primary">
-                                    View
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    {% else %}
-    <div class="card">
-        <div class="card-body text-center py-5">
-            <div class="feature-icon mx-auto mb-3">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
-                    <polyline points="17 2 12 7 7 2"/>
-                </svg>
-            </div>
-            <h5 class="fw-semibold mb-2">No battles yet</h5>
-            <p class="text-secondary mb-4">You haven't completed any battles yet. Start your first one!</p>
-            <a href="{% url 'create_battle' %}" class="btn btn-primary">Create Battle</a>
-        </div>
-    </div>
-    {% endif %}
+<div class="history-header">
+    <div class="eyebrow">Arena Records // Combat Log</div>
+    <h2>Battle History</h2>
+    <p>Your completed battles and results.</p>
 </div>
+
+{% if battle_rows %}
+<div class="problems-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Battle Code</th>
+                <th>Creator</th>
+                <th>Opponent</th>
+                <th>Result</th>
+                <th>Date</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in battle_rows %}
+            <tr>
+                <td><span class="battle-code">{{ row.battle.battle_code }}</span></td>
+                <td>
+                    {{ row.battle.creator.username }}
+                    {% if row.battle.creator == user %}<span class="you-badge">You</span>{% endif %}
+                </td>
+                <td>
+                    {{ row.battle.opponent.username }}
+                    {% if row.battle.opponent == user %}<span class="you-badge">You</span>{% endif %}
+                </td>
+                <td>
+                    {% if row.result %}
+                        {% if row.result.is_draw %}
+                            <span class="chip draw">Draw</span>
+                        {% elif row.battle.winner == user %}
+                            <span class="chip win">
+                                <span class="material-symbols-outlined" style="font-size:12px;font-variation-settings:'FILL' 1;">emoji_events</span>
+                                Won
+                            </span>
+                        {% else %}
+                            <span class="chip lost">Lost</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="chip" style="color:var(--outline);">In Progress</span>
+                    {% endif %}
+                </td>
+                <td style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--outline);">{{ row.battle.created_at|date:"M d, Y" }}</td>
+                <td class="text-end">
+                    <a href="{% url 'battle_result' row.battle.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    <span class="material-symbols-outlined" style="font-size:48px;color:var(--outline-variant);">swords</span>
+    <h5>No battles yet</h5>
+    <p>You haven't completed any battles yet. Enter the arena!</p>
+    <a href="{% url 'create_battle' %}" class="btn btn-primary">
+        <span class="material-symbols-outlined" style="font-size:16px;">add</span>
+        Create Battle
+    </a>
+</div>
+{% endif %}
 {% endblock %}

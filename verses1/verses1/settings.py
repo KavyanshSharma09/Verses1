@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from typing import Any, cast
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -88,7 +89,7 @@ DATABASES = {
 import dj_database_url
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
-    DATABASES['default'] = dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
+    DATABASES['default'] = cast(dict[str, Any], dj_database_url.config(default=DATABASE_URL, conn_max_age=600))
 
 
 AUTH_PASSWORD_VALIDATORS = [

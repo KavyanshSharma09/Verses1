@@ -1,256 +1,99 @@
 {% extends 'base.html' %}
 
-{% block title %}All Submissions | Verses1{% endblock %}
+{% block title %}Submission Leaderboard | Verses1{% endblock %}
 
 {% block extra_css %}
 <style>
-.stats-overview {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 32px;
+.sub-header {
+    margin-bottom: 1.5rem;
 }
-.stat-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-}
-.stat-card .stat-value {
-    font-size: 2rem;
-    font-weight: 700;
+.sub-header .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
     color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 0.3rem;
 }
-.stat-card .stat-label {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
 }
-.problem-summary {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    margin-bottom: 24px;
+.summary {
+    background: var(--surface-container);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    padding: 1rem;
 }
-.problem-summary-header {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border);
+.summary .k {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--outline);
+    margin-bottom: 0.3rem;
 }
-.problem-summary-item {
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background 0.2s;
+.summary .v {
+    font-size: 1.4rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    color: var(--on-surface);
 }
-.problem-summary-item:last-child {
-    border-bottom: none;
-}
-.problem-summary-item:hover {
-    background: var(--bg);
-}
-.submission-table {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-}
-.submission-row {
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background 0.2s;
-}
-.submission-row:last-child {
-    border-bottom: none;
-}
-.submission-row:hover {
-    background: var(--bg);
-}
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 500;
-}
-.status-accepted {
-    background: rgba(16, 185, 129, 0.15);
-    color: #10b981;
-}
-.status-failed {
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-}
-.difficulty-badge {
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-.difficulty-easy { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-.difficulty-medium { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-.difficulty-hard { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-
-/* Dark mode */
-[data-theme="dark"] .stat-card {
-    background: var(--card-bg);
-    border-color: var(--border-color);
-}
-[data-theme="dark"] .problem-summary,
-[data-theme="dark"] .submission-table {
-    background: var(--card-bg);
-    border-color: var(--border-color);
-}
-[data-theme="dark"] .problem-summary-header,
-[data-theme="dark"] .problem-summary-item,
-[data-theme="dark"] .submission-row {
-    border-bottom-color: var(--border-color);
-}
-[data-theme="dark"] .problem-summary-item:hover,
-[data-theme="dark"] .submission-row:hover {
-    background: rgba(51, 65, 85, 0.3);
-}
-[data-theme="dark"] .stat-card .stat-label {
-    color: #94a3b8;
-}
+.status-ok { color: var(--secondary); font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.status-bad { color: #ff6b6b; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <!-- Header -->
-    <div class="mb-4">
-        <h2 class="fw-bold d-flex align-items-center gap-2">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-            </svg>
-            All Submissions
-        </h2>
-        <p class="text-secondary">Your complete submission history across all problems</p>
-    </div>
+<div class="sub-header">
+    <div class="eyebrow">Analytics // Submission Records</div>
+    <h2 style="font-family:'Space Grotesk',sans-serif;font-weight:800;font-size:1.8rem;">Submission Leaderboard</h2>
+</div>
 
-    <!-- Stats Overview -->
-    <div class="stats-overview">
-        <div class="stat-card">
-            <div class="stat-value">{{ total_submissions }}</div>
-            <div class="stat-label">Total Submissions</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ problem_stats|length }}</div>
-            <div class="stat-label">Problems Attempted</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value" style="color: #10b981;">
-                {% with solved=0 %}
-                {% for ps in problem_stats %}
-                    {% if ps.passed > 0 %}{% endif %}
-                {% endfor %}
-                {{ problem_stats|length }}
-                {% endwith %}
-            </div>
-            <div class="stat-label">Problems Solved</div>
-        </div>
-    </div>
+<div class="summary-grid">
+    <div class="summary"><div class="k">Total Submissions</div><div class="v">{{ total_submissions }}</div></div>
+    <div class="summary"><div class="k">Problems Attempted</div><div class="v">{{ problem_stats|length }}</div></div>
+    <div class="summary"><div class="k">Displayed Records</div><div class="v">{{ submissions|length }}</div></div>
+</div>
 
-    <!-- Problem Summary -->
-    <div class="problem-summary">
-        <div class="problem-summary-header">
-            <h5 class="mb-0 fw-semibold">Problems Summary</h5>
-        </div>
-        {% for ps in problem_stats %}
-        <a href="{% url 'submission_history' ps.problem.slug %}" class="text-decoration-none">
-            <div class="problem-summary-item">
-                <div class="d-flex align-items-center gap-3">
-                    {% if ps.passed > 0 %}
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                    {% else %}
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                    {% endif %}
-                    <div>
-                        <span class="fw-medium">{{ ps.problem.title }}</span>
-                        <span class="difficulty-badge difficulty-{{ ps.problem.difficulty }} ms-2">{{ ps.problem.get_difficulty_display }}</span>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center gap-3">
-                    <small class="text-muted">{{ ps.total }} submission{{ ps.total|pluralize }}</small>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="9 18 15 12 9 6"/>
-                    </svg>
-                </div>
-            </div>
-        </a>
-        {% empty %}
-        <div class="p-4 text-center text-muted">
-            No problems attempted yet.
-        </div>
-        {% endfor %}
-    </div>
+<div class="problems-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Problem</th>
+                <th>Status</th>
+                <th>Tests</th>
+                <th>Time</th>
+                <th>Score</th>
+                <th class="text-end">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for submission in submissions %}
+            <tr>
+                <td>
+                    <div style="font-weight:700;">{{ submission.problem.title }}</div>
+                    <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--outline);">{{ submission.submitted_at|timesince }} ago</div>
+                </td>
+                <td>{% if submission.all_tests_passed %}<span class="status-ok">Accepted</span>{% else %}<span class="status-bad">Failed</span>{% endif %}</td>
+                <td style="font-family:'JetBrains Mono',monospace;">{{ submission.tests_passed }}/{{ submission.tests_total }}</td>
+                <td style="font-family:'JetBrains Mono',monospace;">{{ submission.avg_execution_time|default:0|floatformat:4 }}s</td>
+                <td style="font-family:'Space Grotesk',sans-serif;font-weight:700;">{% if submission.total_score %}{{ submission.total_score|floatformat:0 }}{% else %}-{% endif %}</td>
+                <td class="text-end"><a href="{% url 'submission_detail' submission.id %}" class="btn btn-sm btn-outline-primary">Inspect</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center py-4" style="color:var(--outline);">No submissions yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 
-    <!-- Recent Submissions -->
-    <h5 class="fw-semibold mb-3">Recent Submissions</h5>
-    <div class="submission-table">
-        {% for submission in submissions %}
-        <a href="{% url 'submission_detail' submission.id %}" class="text-decoration-none">
-            <div class="submission-row">
-                <div class="d-flex align-items-center gap-3">
-                    <span class="status-badge {% if submission.all_tests_passed %}status-accepted{% else %}status-failed{% endif %}">
-                        {% if submission.all_tests_passed %}
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                        Accepted
-                        {% else %}
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"/>
-                            <line x1="6" y1="6" x2="18" y2="18"/>
-                        </svg>
-                        Failed
-                        {% endif %}
-                    </span>
-                    <span class="fw-medium">{{ submission.problem.title }}</span>
-                    <span class="difficulty-badge difficulty-{{ submission.problem.difficulty }}">{{ submission.problem.get_difficulty_display }}</span>
-                </div>
-                <div class="d-flex align-items-center gap-3">
-                    <small class="text-muted">{{ submission.tests_passed }}/{{ submission.tests_total }}</small>
-                    <small class="text-muted">{{ submission.submitted_at|timesince }} ago</small>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="9 18 15 12 9 6"/>
-                    </svg>
-                </div>
-            </div>
-        </a>
-        {% empty %}
-        <div class="p-4 text-center text-muted">
-            No submissions yet. Start solving problems in Practice Mode!
-        </div>
-        {% endfor %}
-    </div>
-
-    {% if submissions %}
-    <div class="text-center mt-4">
-        <a href="{% url 'practice' %}" class="btn btn-primary">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                <path d="M2 17l10 5 10-5"/>
-                <path d="M2 12l10 5 10-5"/>
-            </svg>
-            Solve More Problems
-        </a>
-    </div>
-    {% endif %}
+<div class="mt-3">
+    <a href="{% url 'practice' %}" class="btn btn-primary">
+        <span class="material-symbols-outlined" style="font-size:16px;">play_arrow</span>
+        Go To Practice
+    </a>
 </div>
 {% endblock %}

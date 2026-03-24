@@ -1,123 +1,272 @@
 {% extends "base.html" %}
-{% load static %}
 
-{% block title %}Problems | Verses1{% endblock %}
+{% block title %}Problem Bank | Verses1{% endblock %}
+
+{% block extra_css %}
+<style>
+.bank-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+.bank-hero {
+    background: var(--surface-container);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2rem;
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+}
+.bank-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0, 218, 243, 0.06), transparent);
+    pointer-events: none;
+}
+.bank-hero .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 0.5rem;
+}
+.bank-hero h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+}
+.bank-hero .subtitle {
+    color: var(--on-surface-variant);
+    font-size: 0.85rem;
+}
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+}
+.filter-group {
+    display: flex;
+    align-items: center;
+    background: var(--surface-container-highest);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.filter-btn {
+    padding: 0.4rem 0.75rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--outline);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.filter-btn:hover { color: var(--on-surface-variant); }
+.filter-btn.active {
+    background: rgba(0, 218, 243, 0.1);
+    color: var(--primary);
+}
+.search-field {
+    position: relative;
+}
+.search-field .material-symbols-outlined {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: var(--outline);
+}
+.search-field input {
+    padding-left: 2.2rem !important;
+    width: 220px;
+}
+
+/* Table */
+.problems-table {
+    background: var(--surface-container);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.problems-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.problems-table th {
+    background: rgba(45, 52, 73, 0.4);
+    color: var(--outline);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.problems-table td {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    vertical-align: middle;
+}
+.problems-table tr { transition: background 0.15s; }
+.problems-table tbody tr:hover { background: rgba(0, 218, 243, 0.04); cursor: pointer; }
+.problem-title {
+    font-weight: 700;
+    color: var(--on-surface);
+    transition: color 0.2s;
+}
+.problems-table tbody tr:hover .problem-title { color: var(--primary); }
+.problem-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.625rem;
+    color: var(--outline);
+}
+.domain-chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    color: var(--outline);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+.perf-bar {
+    width: 96px;
+    height: 3px;
+    background: var(--surface-container-highest);
+    border-radius: 2px;
+    overflow: hidden;
+}
+.perf-bar-fill { height: 100%; border-radius: 2px; }
+.status-icon { font-size: 18px; }
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 1.2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.table-footer-info {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--outline);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+.action-stack {
+    display: inline-flex;
+    gap: 0.4rem;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="d-flex align-items-center gap-2">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="7" height="7"/>
-                <rect x="14" y="3" width="7" height="7"/>
-                <rect x="14" y="14" width="7" height="7"/>
-                <rect x="3" y="14" width="7" height="7"/>
-            </svg>
-            Problem Library
-        </h2>
-        <a href="{% url 'create_battle' %}" class="btn btn-primary d-flex align-items-center gap-2">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M12 8v8M8 12h8"/>
-            </svg>
-            Create Battle
-        </a>
-    </div>
-    
-    <!-- Difficulty Filter -->
-    <div class="mb-4">
-        <div class="btn-group" role="group">
-            <button type="button" class="btn btn-outline-secondary active" data-filter="all">All</button>
-            <button type="button" class="btn btn-outline-success" data-filter="easy">Easy</button>
-            <button type="button" class="btn btn-outline-warning" data-filter="medium">Medium</button>
-            <button type="button" class="btn btn-outline-danger" data-filter="hard">Hard</button>
+<div class="bank-container">
+    <!-- Hero -->
+    <div class="bank-hero">
+        <div style="position:relative;z-index:1;">
+            <div class="d-flex flex-wrap justify-content-between gap-2 align-items-end">
+                <div>
+                    <div class="eyebrow">Library Node // Accessing Database</div>
+                    <h2>The Library</h2>
+                    <div class="subtitle">Accessing database: {{ problems|length }} active challenge modules</div>
+                </div>
+                <a href="{% url 'create_battle' %}" class="btn btn-primary">New Duel</a>
+            </div>
         </div>
     </div>
-    
-    <!-- Problems Grid -->
-    <div class="row" id="problemsGrid">
-        {% for problem in problems %}
-        <div class="col-md-6 col-lg-4 mb-4 problem-card" data-difficulty="{{ problem.difficulty }}">
-            <div class="card h-100 battle-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title mb-0">{{ problem.title }}</h5>
-                        <span class="badge {% if problem.difficulty == 'easy' %}bg-success{% elif problem.difficulty == 'medium' %}bg-warning{% else %}bg-danger{% endif %}">
-                            {{ problem.get_difficulty_display }}
+
+    <!-- Filters -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <form method="get" class="filter-bar" id="filterForm">
+            <div class="search-field">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" class="form-control" placeholder="SEARCH IDENTIFIER..." name="q" value="{{ search_query }}">
+            </div>
+            <select class="form-select" name="difficulty" style="width:auto;min-width:150px;" onchange="this.form.submit()">
+                <option value="">All Difficulties</option>
+                <option value="easy" {% if selected_difficulty == 'easy' %}selected{% endif %}>Easy</option>
+                <option value="medium" {% if selected_difficulty == 'medium' %}selected{% endif %}>Medium</option>
+                <option value="hard" {% if selected_difficulty == 'hard' %}selected{% endif %}>Hard</option>
+            </select>
+            <select class="form-select" name="category" style="width:auto;min-width:150px;" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.slug }}" {% if selected_category == category.slug %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-outline-primary btn-sm" type="submit">Apply</button>
+        </form>
+    </div>
+
+    <!-- Problems Table -->
+    <div class="problems-table">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:50px;">ID</th>
+                    <th>Challenge Module</th>
+                    <th>Difficulty</th>
+                    <th>Limits</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for problem in problems %}
+                <tr onclick="window.location='{% url 'problem_detail' problem.slug %}'">
+                    <td>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--outline);">#{{ forloop.counter|stringformat:"03d" }}</span>
+                    </td>
+                    <td>
+                        <div class="problem-title">{{ problem.title }}</div>
+                        <div class="problem-sub">{{ problem.description|truncatewords:10 }}</div>
+                    </td>
+                    <td>
+                        <span class="diff {{ problem.difficulty }}">{{ problem.get_difficulty_display }}</span>
+                    </td>
+                    <td>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--outline);">{{ problem.time_limit_seconds }}s / {{ problem.memory_limit_mb }}MB</span>
+                    </td>
+                    <td>
+                        {% if problem.id in solved_problems %}
+                            <span class="material-symbols-outlined" style="color:var(--secondary);font-variation-settings:'FILL' 1;">check_circle</span>
+                        {% else %}
+                            <span class="material-symbols-outlined" style="color:var(--outline-variant);">play_arrow</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end" onclick="event.stopPropagation();">
+                        <span class="action-stack">
+                            <a href="{% url 'problem_detail' problem.slug %}" class="btn btn-sm btn-outline-primary">View</a>
+                            <form action="{% url 'create_battle' %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="problem" value="{{ problem.id }}">
+                                <button type="submit" class="btn btn-sm btn-primary">Duel</button>
+                            </form>
                         </span>
-                    </div>
-                    <p class="card-text text-muted small">
-                        {{ problem.description|truncatewords:30 }}
-                    </p>
-                    <div class="d-flex justify-content-between align-items-center mt-3">
-                        <small class="text-muted d-flex align-items-center gap-2">
-                            <span class="d-flex align-items-center gap-1">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <polyline points="12 6 12 12 16 14"/>
-                                </svg>
-                                {{ problem.time_limit_seconds }}s
-                            </span>
-                            <span class="d-flex align-items-center gap-1">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="2" y="6" width="20" height="12" rx="2"/>
-                                    <path d="M6 12h4"/>
-                                </svg>
-                                {{ problem.memory_limit_mb }}MB
-                            </span>
-                        </small>
-                    </div>
-                </div>
-                <div class="card-footer bg-transparent border-0">
-                    <div class="d-flex gap-2">
-                        <a href="{% url 'problem_detail' problem.slug %}" class="btn btn-outline-primary btn-sm flex-fill">
-                            View Details
-                        </a>
-                        <a href="{% url 'create_battle' %}?problem={{ problem.slug }}" class="btn btn-primary btn-sm flex-fill d-flex align-items-center justify-content-center gap-1">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/>
-                                <path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-                                <path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/>
-                                <path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/>
-                                <path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/>
-                                <path d="M15.5 19H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/>
-                                <path d="M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z"/>
-                                <path d="M8.5 5H10V3.5C10 2.67 9.33 2 8.5 2S7 2.67 7 3.5 7.67 5 8.5 5z"/>
-                            </svg>
-                            Battle
-                        </a>
-                    </div>
-                </div>
-            </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4" style="color:var(--outline);">No problems matched the selected filters.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="table-footer">
+            <span class="table-footer-info">Showing {{ problems|length }} entries</span>
         </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="alert alert-info">
-                No problems available yet. Check back later!
-            </div>
-        </div>
-        {% endfor %}
     </div>
 </div>
-
-<script>
-document.querySelectorAll('[data-filter]').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const filter = this.dataset.filter;
-        
-        // Update button states
-        document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-        
-        // Filter cards
-        document.querySelectorAll('.problem-card').forEach(card => {
-            if (filter === 'all' || card.dataset.difficulty === filter) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    });
-});
-</script>
 {% endblock %}

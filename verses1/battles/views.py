@@ -39,9 +39,13 @@ def problem_list(request):
     """List all available problems with category filtering"""
     category_slug = request.GET.get('category')
     difficulty = request.GET.get('difficulty')
+    search_query = request.GET.get('q', '')
     
-    problems = ProblemStatement.objects.filter(is_active=True)
+    problems = ProblemStatement.objects.filter(is_active=True).prefetch_related('categories')
+    total_problems = problems.count()
     
+    if search_query:
+        problems = problems.filter(title__icontains=search_query)
     if category_slug:
         problems = problems.filter(categories__slug=category_slug)
     if difficulty:
@@ -66,6 +70,7 @@ def problem_list(request):
         'selected_category': category_slug,
         'selected_difficulty': difficulty,
         'solved_problems': solved_problems,
+        'search_query': search_query,
     })
 
 
@@ -101,9 +106,24 @@ def create_battle(request):
             return redirect('battle_detail', battle_id=battle.id)
     else:
         form = BattleCreationForm()
+        # Pre-select problem if passed via query param (id or slug)
+        problem_param = request.GET.get('problem')
+        if problem_param:
+            try:
+                if problem_param.isdigit():
+                    problem = ProblemStatement.objects.get(id=int(problem_param), is_active=True)
+                else:
+                    problem = ProblemStatement.objects.get(slug=problem_param, is_active=True)
+                form.initial['problem'] = problem.id
+            except ProblemStatement.DoesNotExist:
+                pass
     
-    problems = ProblemStatement.objects.filter(is_active=True).order_by('difficulty', 'title')
-    return render(request, 'battles/create_battle.html', {'form': form, 'problems': problems})
+    problems = ProblemStatement.objects.filter(is_active=True)
+    search_query = request.GET.get('q', '')
+    if search_query:
+        problems = problems.filter(title__icontains=search_query)
+    problems = problems.order_by('difficulty', 'title')
+    return render(request, 'battles/create_battle.html', {'form': form, 'problems': problems, 'search_query': search_query})
 
 @login_required
 def join_battle(request):
@@ -447,15 +467,19 @@ def practice(request):
     """Practice mode - list problems to solve solo"""
     category_slug = request.GET.get('category')
     difficulty = request.GET.get('difficulty')
+    search_query = request.GET.get('q', '')
     
-    problems = ProblemStatement.objects.filter(is_active=True)
+    problems = ProblemStatement.objects.filter(is_active=True).prefetch_related('categories')
     
+    if search_query:
+        problems = problems.filter(title__icontains=search_query)
     if category_slug:
         problems = problems.filter(categories__slug=category_slug)
     if difficulty:
         problems = problems.filter(difficulty=difficulty)
     
     problems = problems.order_by('difficulty', 'title').distinct()
+    total_problems = problems.count()
     categories = Category.objects.all()
     
     # Get user's solved problems
@@ -468,6 +492,8 @@ def practice(request):
     
     # Get user stats
     user_stats, _ = UserStats.objects.get_or_create(user=request.user)
+    solved_count = user_stats.problems_solved if user_stats else 0
+    progress_percent = int((solved_count / total_problems) * 100) if total_problems else 0
     
     return render(request, 'battles/practice.html', {
         'problems': problems,
@@ -476,6 +502,9 @@ def practice(request):
         'current_difficulty': difficulty,
         'solved_problems': solved_problems,
         'user_stats': user_stats,
+        'total_problems': total_problems,
+        'progress_percent': progress_percent,
+        'search_query': search_query,
     })
 
 

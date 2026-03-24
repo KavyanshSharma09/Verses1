@@ -186,9 +186,9 @@
 }
 
 .problem-panel {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
+    background: var(--surface-container);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -196,21 +196,24 @@
 
 .problem-header {
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .back-link {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--text-secondary);
+    color: var(--outline);
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     margin-bottom: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
 }
 
 .back-link:hover {
-    color: var(--primary-color);
+    color: var(--primary);
 }
 
 .problem-title-section h1 {
@@ -232,9 +235,9 @@
     border-radius: 20px;
 }
 
-.difficulty-easy { background: #dcfce7; color: #166534; }
-.difficulty-medium { background: #fef3c7; color: #92400e; }
-.difficulty-hard { background: #fee2e2; color: #991b1b; }
+.difficulty-easy { background: rgba(78, 222, 163, 0.15); color: var(--secondary); }
+.difficulty-medium { background: rgba(0, 218, 243, 0.15); color: var(--primary); }
+.difficulty-hard { background: rgba(255, 185, 95, 0.2); color: var(--tertiary); }
 
 .category-badge {
     font-size: 0.75rem;
@@ -250,9 +253,9 @@
     gap: 0.25rem;
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
-    background: #dcfce7;
-    color: #166534;
-    border-radius: 4px;
+    background: rgba(78, 222, 163, 0.15);
+    color: var(--secondary);
+    border-radius: 1px;
 }
 
 .submissions-link {
@@ -261,15 +264,15 @@
     gap: 0.25rem;
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
-    background: rgba(99, 102, 241, 0.15);
-    color: #6366f1;
-    border-radius: 4px;
+    background: rgba(0, 218, 243, 0.1);
+    color: var(--primary);
+    border-radius: 1px;
     text-decoration: none;
     transition: all 0.2s;
 }
 .submissions-link:hover {
-    background: rgba(99, 102, 241, 0.25);
-    color: #4f46e5;
+    background: rgba(0, 218, 243, 0.2);
+    color: var(--primary);
 }
 
 .problem-content {
@@ -345,9 +348,9 @@
 
 /* Editor Panel */
 .editor-panel {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
+    background: var(--surface-container);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -666,117 +669,7 @@
     }
 }
 
-/* Dark mode */
-[data-theme="dark"] .difficulty-easy {
-    background: rgba(22, 163, 74, 0.2);
-    color: #4ade80;
-}
-
-[data-theme="dark"] .difficulty-medium {
-    background: rgba(245, 158, 11, 0.2);
-    color: #fbbf24;
-}
-
-[data-theme="dark"] .difficulty-hard {
-    background: rgba(239, 68, 68, 0.2);
-    color: #f87171;
-}
-
-[data-theme="dark"] .solved-badge {
-    background: rgba(22, 163, 74, 0.2);
-    color: #4ade80;
-}
-
-[data-theme="dark"] .submissions-link {
-    background: rgba(99, 102, 241, 0.2);
-    color: #a5b4fc;
-}
-[data-theme="dark"] .submissions-link:hover {
-    background: rgba(99, 102, 241, 0.3);
-    color: #c7d2fe;
-}
-
-/* Dark mode test results */
-[data-theme="dark"] .test-results {
-    background: rgba(30, 30, 45, 0.8);
-}
-
-[data-theme="dark"] .test-result-item {
-    background: #1e1e2e;
-    border-color: #3d3d5c;
-}
-
-[data-theme="dark"] .test-result-item.passed {
-    background: rgba(16, 185, 129, 0.15);
-    border-color: #10b981;
-}
-
-[data-theme="dark"] .test-result-item.failed {
-    background: rgba(239, 68, 68, 0.15);
-    border-color: #ef4444;
-}
-
-[data-theme="dark"] .test-result-title {
-    color: #e2e8f0;
-}
-
-[data-theme="dark"] .test-result-details {
-    color: #cbd5e1;
-}
-
-[data-theme="dark"] .test-result-details strong {
-    color: #f1f5f9;
-}
-
-[data-theme="dark"] .test-result-details code {
-    background: rgba(55, 55, 75, 0.8) !important;
-    color: #e2e8f0;
-    border: 1px solid rgba(100, 100, 130, 0.3);
-}
-
-[data-theme="dark"] .test-code {
-    background: rgba(55, 55, 75, 0.9);
-    color: #f1f5f9;
-    border: 1px solid rgba(100, 100, 130, 0.4);
-}
-
-[data-theme="dark"] .test-code.output-passed {
-    background: rgba(16, 185, 129, 0.25);
-    color: #6ee7b7;
-    border-color: rgba(16, 185, 129, 0.4);
-}
-
-[data-theme="dark"] .test-code.output-failed {
-    background: rgba(239, 68, 68, 0.25);
-    color: #fca5a5;
-    border-color: rgba(239, 68, 68, 0.4);
-}
-
-[data-theme="dark"] .results-summary {
-    color: #e2e8f0;
-}
-
-[data-theme="dark"] .results-placeholder {
-    color: #94a3b8;
-}
-
-[data-theme="dark"] span,
-[data-theme="dark"] strong {
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] .text-muted {
-    color: #94a3b8 !important;
-}
-
-[data-theme="dark"] .card-body span,
-[data-theme="dark"] .card-body strong {
-    color: var(--text-primary);
-}
-
-[data-theme="dark"] p {
-    color: var(--text-secondary);
-}
+/* Dark mode overrides removed — design is dark-first with light mode via data-theme */
 </style>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>

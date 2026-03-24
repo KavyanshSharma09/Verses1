@@ -1,6 +1,7 @@
 
 document.addEventListener('DOMContentLoaded', function(){
   
+  // Fade-in observer
   const observer = new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
       if(entry.isIntersecting){
@@ -10,17 +11,7 @@ document.addEventListener('DOMContentLoaded', function(){
   },{threshold:.15});
   document.querySelectorAll('.fade-in').forEach(el=>observer.observe(el));
 
-  
-  const nav = document.querySelector('.navbar');
-  if(nav){
-    const onScroll = ()=>{
-      if(window.scrollY>30) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
-    };
-    window.addEventListener('scroll', onScroll);
-    onScroll();
-  }
-
-
+  // Copy battle code buttons
   document.querySelectorAll('.copy-battle-code').forEach(btn=>{
     btn.addEventListener('click', async (e)=>{
       const code = btn.dataset.code;
@@ -28,14 +19,22 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   });
 
-  
+  // Bootstrap tooltips
   if(typeof bootstrap!=='undefined'){
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el=>{
       new bootstrap.Tooltip(el);
     });
   }
 
+  // Active nav link highlight
+  const currentPath = window.location.pathname;
+  document.querySelectorAll('.nav-link').forEach(link => {
+    if (link.getAttribute('href') === currentPath) {
+      link.classList.add('active');
+    }
+  });
 
+  // Battle status polling
   (function setupBattlePolling(){
     const statusEl = document.getElementById('battle-status');
     if(!statusEl) return;
