@@ -27,6 +27,7 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
     'testserver'
+    'verses1.kavyanshsharma362.workers.dev'
 ]
 
 # Allow host overrides for Cloudflare/custom domains via env
@@ -168,6 +169,12 @@ CSRF_TRUSTED_ORIGINS = [
 _env_csrf = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS')
 if _env_csrf:
     CSRF_TRUSTED_ORIGINS.extend([o.strip() for o in _env_csrf.split(',') if o.strip()])
+
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = os.environ.get('DJANGO_SECURE_SSL_REDIRECT', 'False') == 'True'
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 # Static files storage for production
 if not DEBUG:
