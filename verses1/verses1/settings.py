@@ -29,6 +29,11 @@ ALLOWED_HOSTS = [
     'testserver'
 ]
 
+# Allow host overrides for Cloudflare/custom domains via env
+_env_hosts = os.environ.get('DJANGO_ALLOWED_HOSTS')
+if _env_hosts:
+    ALLOWED_HOSTS.extend([h.strip() for h in _env_hosts.split(',') if h.strip()])
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -159,6 +164,10 @@ CSRF_TRUSTED_ORIGINS = [
     'https://verses1.onrender.com',
     'https://*.onrender.com',
 ]
+
+_env_csrf = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS')
+if _env_csrf:
+    CSRF_TRUSTED_ORIGINS.extend([o.strip() for o in _env_csrf.split(',') if o.strip()])
 
 # Static files storage for production
 if not DEBUG:

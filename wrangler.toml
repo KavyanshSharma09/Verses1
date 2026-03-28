@@ -1,0 +1,8 @@
+name = "verses-proxy"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+workers_dev = true
+
+# Set your origin; override in Cloudflare dashboard or with --var UPSTREAM_ORIGIN=...
+[vars]
+UPSTREAM_ORIGIN = "https://verses1.onrender.com"
