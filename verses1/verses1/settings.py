@@ -83,16 +83,23 @@ import dj_database_url
 DATABASE_URL = os.environ.get('DATABASE_URL')
 DATABASE_CONN_MAX_AGE = int(os.environ.get('DATABASE_CONN_MAX_AGE', 600))
 
+if DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.strip().strip('"').strip("'")
+
 # Never allow production to silently fall back to SQLite.
 if not DEBUG and not DATABASE_URL:
     raise ImproperlyConfigured('DATABASE_URL must be set when DEBUG=False.')
 
 if DATABASE_URL:
+    default_db = cast(
+        dict[str, Any],
+        dj_database_url.parse(DATABASE_URL, conn_max_age=DATABASE_CONN_MAX_AGE, ssl_require=not DEBUG),
+    )
+    if not default_db.get('NAME'):
+        default_db['NAME'] = os.environ.get('DATABASE_NAME', 'postgres')
+
     DATABASES = {
-        'default': cast(
-            dict[str, Any],
-            dj_database_url.parse(DATABASE_URL, conn_max_age=DATABASE_CONN_MAX_AGE, ssl_require=not DEBUG),
-        )
+        'default': default_db
     }
 else:
     DATABASES = {
