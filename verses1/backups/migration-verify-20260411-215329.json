@@ -1,0 +1,35 @@
+﻿{
+    "timestamp":  "2026-04-11T21:53:29.6168994+05:30",
+    "source":  "sqlite",
+    "target":  "postgresql",
+    "source_counts":  {
+                          "battle_results":  16,
+                          "battles":  45,
+                          "categories":  15,
+                          "code_submissions":  35,
+                          "login_activity":  27,
+                          "practice_submissions":  9,
+                          "problems":  68,
+                          "test_cases":  981,
+                          "uploaded_files":  0,
+                          "user_stats":  4,
+                          "users":  12
+                      },
+    "target_counts":  {
+                          "battle_results":  16,
+                          "battles":  45,
+                          "categories":  15,
+                          "code_submissions":  35,
+                          "login_activity":  27,
+                          "practice_submissions":  9,
+                          "problems":  68,
+                          "test_cases":  981,
+                          "uploaded_files":  0,
+                          "user_stats":  4,
+                          "users":  12
+                      },
+    "matches":  true,
+    "differences":  [
+
+                    ]
+}

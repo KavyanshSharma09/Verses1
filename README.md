@@ -152,6 +152,81 @@ verses1/
 
 ---
 
+## 🗄️ Production Database Upgrade (SQLite → PostgreSQL on Render)
+
+Use this flow when moving existing data from local SQLite to your Render PostgreSQL database.
+
+1. **Create a local backup from SQLite**
+   ```bash
+   python manage.py dumpdata --natural-foreign --natural-primary --exclude contenttypes --exclude auth.permission > backup.json
+   ```
+
+   PowerShell timestamped variant:
+   ```powershell
+   $ts = Get-Date -Format yyyyMMdd
+   python manage.py dumpdata --natural-foreign --natural-primary --exclude contenttypes --exclude auth.permission > "backup-$ts.json"
+   ```
+
+2. **Ensure target PostgreSQL is configured**
+   - Use [render.yaml](render.yaml) as the single source of truth for Render blueprint deploys.
+   - Set `DATABASE_URL` to your target PostgreSQL connection string (Supabase or Render Postgres).
+
+3. **Deploy schema to PostgreSQL**
+   - Deploy normally; `build.sh` already runs `python manage.py migrate`.
+
+4. **Load data into PostgreSQL**
+   ```bash
+   python manage.py loaddata backup-YYYYMMDD.json
+   ```
+
+5. **Validate migration health**
+   ```bash
+   python manage.py check
+   python manage.py showmigrations
+   ```
+
+### Required Production Environment Variables
+
+- `DJANGO_SECRET_KEY`
+- `DEBUG=False`
+- `DATABASE_URL` (required when `DEBUG=False`)
+
+### Using Supabase (Alternative to Render Postgres)
+
+Supabase works out of the box because it is PostgreSQL.
+
+1. Create a Supabase project and copy the Postgres connection string.
+2. Set `DATABASE_URL` in Render (or your host) to that Supabase URL.
+3. Ensure SSL is enabled in the URL (Supabase URLs typically include `sslmode=require`).
+4. Run the migration script:
+
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File ./scripts/migrate_sqlite_to_postgres.ps1
+   ```
+
+5. Verify row counts between SQLite and Supabase:
+
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File ./scripts/verify_sqlite_vs_postgres.ps1
+   ```
+
+   This writes a verification report under `backups/migration-verify-*.json`.
+
+Tip: For production traffic, consider Supabase Session Pooler/pgBouncer connection strings if you scale to multiple app instances.
+
+### Optional Persistent Media Storage (Recommended)
+
+Render disks are ephemeral, so uploaded files can be lost after redeploys unless you use object storage.
+
+Set these vars to enable S3-compatible storage:
+
+- `USE_S3_MEDIA=True`
+- `AWS_STORAGE_BUCKET_NAME`
+- `AWS_S3_REGION_NAME` (optional, default `us-east-1`)
+- `AWS_S3_CUSTOM_DOMAIN` (optional)
+
+---
+
 ## 🤝 Collaboration
 
 This project isn't about chasing trends or copying what's already out there.

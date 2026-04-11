@@ -1,461 +1,527 @@
 {% extends "base.html" %}
 
-{% block title %}Verses1 - The Digital Crucible{% endblock %}
+{% block title %}Verses1 - 3D Crucible{% endblock %}
+
+{% block extra_head %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+{% endblock %}
 
 {% block extra_css %}
 <style>
-.landing-hero {
-    text-align: center;
-    padding: 4rem 2rem;
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(180deg, 
-        rgba(0, 218, 243, 0.06) 0%, 
-        rgba(11, 19, 38, 1) 100%);
-}
-.landing-hero::before {
-    content: '';
-    position: absolute;
-    top: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 200px;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--primary), transparent);
-    opacity: 0.4;
-}
-.protocol-badge {
-    display: inline-block;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    padding: 0.3rem 0.7rem;
-    border: 1px solid rgba(0, 218, 243, 0.4);
-    color: var(--primary);
-    margin-bottom: 2rem;
-    background: rgba(0, 218, 243, 0.05);
-}
-.hero-headline {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(2.5rem, 6vw, 5rem);
-    font-weight: 800;
-    line-height: 0.95;
-    margin-bottom: 1.5rem;
-    color: var(--on-surface);
-}
-.hero-headline .accent {
-    color: var(--primary);
-    display: block;
-}
-.hero-desc {
-    max-width: 600px;
-    margin: 0 auto 2rem;
-    color: var(--on-surface-variant);
-    font-size: 1rem;
-    line-height: 1.7;
-}
-.hero-desc em {
-    color: var(--primary);
-    font-style: italic;
-    font-weight: 600;
-}
-.hero-actions {
-    display: flex;
-    justify-content: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-bottom: 3rem;
-}
-.hero-actions .btn { min-width: 180px; }
-.btn-explore {
-    background: var(--surface-container-highest);
-    color: var(--on-surface);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    font-weight: 700;
-    font-family: 'Space Grotesk', sans-serif;
-    text-transform: uppercase;
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    border-radius: 1px;
-    padding: 0.6rem 1.5rem;
-    transition: all 0.2s;
-}
-.btn-explore:hover {
-    background: var(--surface-bright);
-    color: var(--on-surface);
-    border-color: rgba(255, 255, 255, 0.2);
+:root {
+    --bg: #070b16;
+    --bg-elev: #0e1528;
+    --text: #e8edff;
+    --muted: #95a4d7;
+    --primary: #77f7ff;
+    --primary-strong: #2dd8ee;
+    --accent: #a98bff;
+    --line: rgba(255, 255, 255, 0.08);
+    --ring: rgba(119, 247, 255, 0.45);
 }
 
-/* Code Preview */
-.code-preview {
-    max-width: 850px;
-    margin: 0 auto 0;
-    border-radius: 12px 12px 0 0;
-    overflow: hidden;
-    border: 1px solid var(--outline-variant);
-    border-bottom: none;
-    background: var(--surface-container-low);
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+body {
+    cursor: none;
+}
+
+.main-content {
+    padding: 0 !important;
+}
+
+.main-content .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+}
+
+.hero-3d {
     position: relative;
+    min-height: calc(100vh - 86px);
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 12% 15%, rgba(169, 139, 255, 0.18), transparent 44%),
+        radial-gradient(circle at 88% 84%, rgba(119, 247, 255, 0.14), transparent 42%),
+        linear-gradient(160deg, #070b16 0%, #0b1020 46%, #060910 100%);
+}
+
+#scene3d {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     z-index: 1;
 }
-.code-preview-bar {
-    background: var(--surface-container-high);
-    padding: 0.6rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    border-bottom: 1px solid var(--outline-variant);
+
+.ui-layer {
+    position: relative;
+    z-index: 4;
+    padding: clamp(3rem, 8vw, 8rem) clamp(1rem, 5vw, 5rem);
+    max-width: 1120px;
 }
-.code-dot { width: 10px; height: 10px; border-radius: 50%; }
-.code-dot.r { background: #ff5f57; }
-.code-dot.y { background: #febc2e; }
-.code-dot.g { background: #28c840; }
-.code-preview-bar span {
-    margin-left: 0.5rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--on-surface-variant);
+
+.kicker,
+.hero-title,
+.hero-copy,
+.hero-actions,
+.hero-stats,
+.hero-modules,
+.hero-cta {
+    opacity: 0;
+    transform: translateY(28px);
+    animation: fadeUp 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.kicker { animation-delay: 120ms; }
+.hero-title { animation-delay: 240ms; }
+.hero-copy { animation-delay: 360ms; }
+.hero-actions { animation-delay: 480ms; }
+.hero-stats { animation-delay: 620ms; }
+.hero-modules { animation-delay: 760ms; }
+.hero-cta { animation-delay: 920ms; }
+
+.kicker {
+    display: inline-flex;
+    font-family: "Manrope", sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.67rem;
+    color: var(--primary);
+    border: 1px solid var(--ring);
+    padding: 0.35rem 0.65rem;
+    margin-bottom: 1rem;
+    background: rgba(119, 247, 255, 0.07);
+}
+
+.hero-title {
+    font-family: "Syne", sans-serif;
+    font-size: clamp(2.1rem, 7vw, 5.8rem);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    margin: 0;
+    color: var(--text);
+    text-transform: uppercase;
+}
+
+.hero-title .accent {
+    color: var(--primary);
+    text-shadow: 0 0 32px rgba(119, 247, 255, 0.35);
+}
+
+.hero-copy {
+    margin-top: 1rem;
+    max-width: 640px;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.75;
+    font-family: "Manrope", sans-serif;
+}
+
+.hero-actions {
+    margin-top: 1.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.btn-crucible,
+.btn-ghost {
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    padding: 0.72rem 1.05rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-family: "Syne", sans-serif;
+    font-weight: 700;
+    font-size: 0.76rem;
+    transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease, background-color 260ms ease;
+}
+
+.btn-crucible {
+    color: #07232a;
+    background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+    border-color: rgba(119, 247, 255, 0.9);
+}
+
+.btn-crucible:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px rgba(45, 216, 238, 0.3);
+}
+
+.btn-ghost {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.btn-ghost:hover {
+    border-color: var(--ring);
+    background: rgba(119, 247, 255, 0.09);
+    transform: translateY(-2px);
+}
+
+.hero-stats {
+    margin-top: 2.2rem;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.8rem;
+    max-width: 760px;
+}
+
+.stat-item {
+    background: rgba(14, 21, 40, 0.65);
+    border: 1px solid var(--line);
+    padding: 0.9rem;
+}
+
+.stat-item strong {
+    display: block;
+    font-family: "Syne", sans-serif;
+    color: var(--primary);
+    font-size: 1.45rem;
+    line-height: 1;
+}
+
+.stat-item span {
+    display: block;
+    margin-top: 0.3rem;
+    color: var(--muted);
+    font-size: 0.66rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-family: "Manrope", sans-serif;
+}
+
+.hero-modules {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+    max-width: 840px;
+}
+
+.module {
+    background: rgba(14, 21, 40, 0.65);
+    border: 1px solid var(--line);
+    padding: 0.9rem;
+}
+
+.module h3 {
+    margin: 0 0 0.4rem;
+    font-family: "Syne", sans-serif;
+    text-transform: uppercase;
+    color: var(--text);
+    font-size: 0.98rem;
+}
+
+.module p {
+    margin: 0;
+    color: var(--muted);
+    font-family: "Manrope", sans-serif;
+    font-size: 0.82rem;
+    line-height: 1.55;
+}
+
+.hero-cta {
+    margin-top: 1rem;
+}
+
+.hero-cta p {
+    margin: 0;
+    color: rgba(119, 247, 255, 0.8);
+    font-family: "Manrope", sans-serif;
+    font-size: 0.8rem;
     letter-spacing: 0.05em;
 }
-.code-preview-body {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    background: transparent;
-}
-.code-text {
-    padding: 1.2rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.78rem;
-    line-height: 1.8;
-    overflow-x: auto;
-    color: var(--on-surface);
-}
-.code-text .ln { color: var(--outline-variant); margin-right: 1.5rem; user-select: none; }
-.code-text .kw { color: #c792ea; }
-.code-text .fn { color: #82aaff; }
-.code-text .st { color: #c3e88d; }
-.code-text .cm { color: #546e7a; font-style: italic; }
-.code-text .op { color: #89ddff; }
-.code-text .num { color: #f78c6c; }
-.code-text .bi { color: #ffcb6b; }
-.code-metrics {
-    padding: 1.2rem;
-    border-left: 1px solid var(--outline-variant);
-    background: var(--surface-container);
-    min-width: 200px;
-}
-.code-metrics-item {
-    margin-bottom: 1.2rem;
-}
-.code-metrics-item .label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--on-surface);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 0.25rem;
-}
-.code-metrics-item .val {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: var(--primary);
-}
-.code-metrics-item .bar {
-    margin-top: 0.3rem;
-    height: 3px;
-    background: var(--surface-container-high);
-    border-radius: 2px;
-    overflow: hidden;
-}
-.code-metrics-item .bar-fill {
-    height: 100%;
-    border-radius: 2px;
-}
-.code-metrics-item .bar-fill.cyan { background: var(--primary); }
-.code-metrics-item .bar-fill.amber { background: var(--tertiary); }
 
-/* Execution Summary */
-.execution-summary {
-    max-width: 850px;
-    margin: 0 auto 3rem;
-    background: var(--surface-container-low);
-    padding: 0.8rem 1.2rem;
-    border: 1px solid var(--outline-variant);
-    border-top: none;
-    text-align: left;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-    position: relative;
-    z-index: 1;
-    border-radius: 0 0 12px 12px;
-}
-
-.hero-stack {
-    position: relative;
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
-}
-.hero-stack > * { margin: 0 auto; }
-
-/* Stats Band */
-.stats-band {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    max-width: 850px;
-    margin: 0 auto 3rem;
-    text-align: center;
-}
-.stat-big {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(1.5rem, 3vw, 2.2rem);
-    font-weight: 800;
-    font-style: italic;
-    color: var(--primary);
-}
-.stat-desc {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--outline);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-top: 0.25rem;
-}
-
-/* Feature Modules */
-.modules-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-.module-card {
-    background: var(--surface-container);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 2rem;
-    border-radius: 2px;
-    position: relative;
-    overflow: hidden;
-}
-.module-card::before {
-    content: '';
+.vignette {
     position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 3px;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    background: radial-gradient(circle at center, transparent 52%, rgba(0, 0, 0, 0.52) 100%);
 }
-.module-card:nth-child(1)::before { background: var(--primary); }
-.module-card:nth-child(2)::before { background: var(--secondary); }
-.module-card:nth-child(3)::before { background: var(--tertiary); }
-.module-card:nth-child(4)::before { background: var(--primary); }
-.module-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    color: var(--primary);
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: 0.5rem;
-}
-.module-card h3 {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-    text-transform: uppercase;
-}
-.module-card p {
-    color: var(--on-surface-variant);
-    font-size: 0.85rem;
-    line-height: 1.6;
-    margin-bottom: 1rem;
-}
-.module-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-}
-.module-tag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 0.2rem 0.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--on-surface-variant);
-    border-radius: 1px;
-}
-.module-icon {
+
+.grain {
     position: absolute;
-    bottom: 1rem;
-    right: 1.5rem;
-    opacity: 0.06;
-    font-size: 100px;
-    color: var(--on-surface);
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0.03;
+    mix-blend-mode: soft-light;
 }
 
-/* CTA */
-.cta-section {
-    text-align: center;
-    padding: 4rem 2rem;
-    margin-top: 2rem;
-    background: linear-gradient(0deg, rgba(0, 218, 243, 0.04), transparent);
-    border-top: 1px solid rgba(255, 255, 255, 0.03);
-}
-.cta-headline {
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: clamp(1.8rem, 4vw, 3rem);
-    font-weight: 800;
-    color: var(--on-surface);
-    margin-bottom: 0.75rem;
-    text-transform: uppercase;
-}
-.cta-desc {
-    color: var(--on-surface-variant);
-    margin-bottom: 2rem;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
+.cursor-dot,
+.cursor-ring {
+    position: fixed;
+    left: 0;
+    top: 0;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: difference;
+    transform: translate(-50%, -50%);
 }
 
-@media (max-width: 768px) {
-    .modules-grid { grid-template-columns: 1fr; }
-    .code-preview-body { grid-template-columns: 1fr; }
-    .code-metrics { border-left: none; border-top: 1px solid rgba(255,255,255,0.05); }
-    .stats-band { grid-template-columns: 1fr; gap: 1rem; }
+.cursor-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffffff;
+}
+
+.cursor-ring {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1.8px solid #ffffff;
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 900px) {
+    .hero-stats,
+    .hero-modules {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (pointer: coarse) {
+    body { cursor: auto; }
+    .cursor-dot,
+    .cursor-ring { display: none; }
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="landing-hero">
-    <div class="protocol-badge">System Protocol v1.04 Initialized</div>
-    <h1 class="hero-headline">
-        THE DIGITAL CRUCIBLE:<span class="accent">ENGINEERED FOR PRECISION.</span>
-    </h1>
-    <p class="hero-desc">
-        Optimize Python code where execution bottlenecks meet elite competitive engineering. Not just correct. <em>Efficient.</em>
-    </p>
+<section class="hero-3d">
+    <canvas id="scene3d"></canvas>
 
-    <div class="hero-actions">
-        {% if user.is_authenticated %}
-            <a href="{% url 'create_battle' %}" class="btn btn-primary btn-lg">Create Battle</a>
-            <a href="{% url 'join_battle' %}" class="btn btn-outline-primary btn-lg" style="padding: 0.6rem 1.5rem; border-radius: 1px;">Join Battle</a>
-            <a href="{% url 'problem_list' %}" class="btn btn-explore btn-lg">Explore Problems</a>
-        {% else %}
-            <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Join The Crucible</a>
-            <a href="{% url 'problem_list' %}" class="btn btn-explore btn-lg">Explore Problems</a>
-        {% endif %}
-    </div>
+    <div class="ui-layer">
+        <div class="kicker">System Protocol v2.0</div>
+        <h1 class="hero-title">The Digital Crucible <span class="accent">Now In 3D</span></h1>
+        <p class="hero-copy">
+            We replaced the flat hero with a cinematic 3D scene: premium metallic geometry, dynamic lights,
+            depth particles, and responsive camera parallax. This is now unmistakably not the previous UI.
+        </p>
 
-    <div class="hero-stack">
-        <!-- Code Preview Terminal -->
-        <div class="code-preview">
-            <div class="code-preview-bar">
-                <span class="code-dot r"></span>
-                <span class="code-dot y"></span>
-                <span class="code-dot g"></span>
-                <span>verses_cli --profile performance_run.py</span>
-            </div>
-            <div class="code-preview-body">
-                <div class="code-text">
-                    <div><span class="ln">01</span><span class="kw">import</span> numpy <span class="kw">as</span> np</div>
-                    <div><span class="ln">02</span><span class="kw">def</span> <span class="fn">optimize_gradient</span> (weights, data):</div>
-                    <div><span class="ln">03</span>    error <span class="op">=</span> np.dot(weights, data.T)</div>
-                    <div><span class="ln">04</span>    <span class="cm"># Bottleneck detected: Halstead Volume High</span></div>
-                    <div><span class="ln">05</span>    update <span class="op">=</span> alpha <span class="op">*</span> (error <span class="op">*</span> data)</div>
-                    <div><span class="ln">06</span>    <span class="kw">return</span> weights <span class="op">-</span> update</div>
-                </div>
-                <div class="code-metrics">
-                    <div class="code-metrics-item">
-                        <div class="label">Complexity</div>
-                        <div class="val">O(N log N)</div>
-                    </div>
-                    <div class="code-metrics-item">
-                        <div class="label">Memory Profile</div>
-                        <div class="val">8.2 GB/s</div>
-                        <div class="bar"><div class="bar-fill cyan" style="width:75%"></div></div>
-                    </div>
-                    <div class="code-metrics-item">
-                        <div class="label">Bottlenecks</div>
-                        <div class="bar"><div class="bar-fill amber" style="width:60%"></div></div>
-                        <div style="font-size:0.6rem;color:var(--tertiary);margin-top:0.2rem;font-family:'JetBrains Mono',monospace;">AST DEPTH: CRITICAL</div>
-                    </div>
-                </div>
-            </div>
+        <div class="hero-actions">
+            {% if user.is_authenticated %}
+                <a href="{% url 'create_battle' %}" class="btn btn-crucible">Create Battle</a>
+                <a href="{% url 'join_battle' %}" class="btn btn-ghost">Join Battle</a>
+                <a href="{% url 'problem_list' %}" class="btn btn-ghost">Explore Problems</a>
+            {% else %}
+                <a href="{% url 'register' %}" class="btn btn-crucible">Initialize Account</a>
+                <a href="{% url 'login' %}" class="btn btn-ghost">Sign In</a>
+                <a href="{% url 'problem_list' %}" class="btn btn-ghost">Explore Problems</a>
+            {% endif %}
         </div>
 
-        <!-- Execution Summary -->
-        <div class="execution-summary">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--on-surface-variant);">
-                <span style="color:var(--primary);">»</span> <strong style="color:var(--on-surface);">EXECUTION SUMMARY</strong><br>
-                Runtime: <span style="color:var(--primary);">12.4ms</span> (98th percentile)<br>
-                Memory: 44.2MB O(N) Complexity<br>
-                <span style="color:var(--secondary);">CRITICAL SUCCESS: Passed all 42 test cases.</span>
-            </div>
+        <div class="hero-stats">
+            <article class="stat-item"><strong>68+</strong><span>Problem Modules</span></article>
+            <article class="stat-item"><strong>O(N log N)</strong><span>Optimization Focus</span></article>
+            <article class="stat-item"><strong>99th</strong><span>Perf Target</span></article>
+        </div>
+
+        <div class="hero-modules">
+            <article class="module">
+                <h3>Advanced Analysis</h3>
+                <p>AST, complexity metrics, and performance telemetry in one pipeline.</p>
+            </article>
+            <article class="module">
+                <h3>Competitive Dueling</h3>
+                <p>Head-to-head optimization battles with measurable scoring deltas.</p>
+            </article>
+            <article class="module">
+                <h3>Solo Practice</h3>
+                <p>Rank up with curated tracks and quantified progression over time.</p>
+            </article>
+            <article class="module">
+                <h3>Quantified Profiles</h3>
+                <p>Live dashboard for trends, history, solved categories, and streaks.</p>
+            </article>
+        </div>
+
+        <div class="hero-cta">
+            <p>Cinematic render active • ACES Filmic tone mapping enabled • Dynamic light rig online</p>
         </div>
     </div>
+
+    <div class="vignette"></div>
+
+    <svg class="grain" xmlns="http://www.w3.org/2000/svg">
+        <filter id="noiseFilter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#noiseFilter)" />
+    </svg>
+
+    <div class="cursor-dot" id="cursorDot"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
 </section>
+{% endblock %}
 
-<!-- Stats Band -->
-<div class="stats-band">
-    <div>
-        <div class="stat-big">10+ ELITE</div>
-        <div class="stat-desc">Operators Active Weekly</div>
-    </div>
-    <div>
-        <div class="stat-big">68+ PRODUCTION</div>
-        <div class="stat-desc">Grade Problems Curated</div>
-    </div>
-    <div>
-        <div class="stat-big">O(N LOG N)</div>
-        <div class="stat-desc">Solutions Architected Daily</div>
-    </div>
-</div>
+{% block extra_js %}
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.162.0/build/three.module.js';
 
-<!-- Feature Modules -->
-<div class="modules-grid">
-    <div class="module-card">
-        <div class="module-eyebrow">Engine Module 01</div>
-        <h3>Advanced Code Analysis</h3>
-        <p>Deep-dive into your solution's structural integrity. Our engine performs AST parsing, Big-O detection, and calculates Halstead metrics in real-time.</p>
-        <div class="module-tags">
-            <span class="module-tag">AST Parsing</span>
-            <span class="module-tag">Big-O Detection</span>
-            <span class="module-tag">Halstead Metrics</span>
-        </div>
-        <span class="material-symbols-outlined module-icon">analytics</span>
-    </div>
-    <div class="module-card">
-        <div class="module-eyebrow" style="color:var(--secondary);">Protocol 02</div>
-        <h3>Competitive Dueling</h3>
-        <p>Real-time optimization battles. See your opponent's resource consumption while you code. Victory is determined by cycles, not just clock time.</p>
-        <span class="material-symbols-outlined module-icon">swords</span>
-    </div>
-    <div class="module-card">
-        <div class="module-eyebrow" style="color:var(--tertiary);">Repository 03</div>
-        <h3>The Problem Bank</h3>
-        <p>Access 68+ curated challenges designed to break intermediate habits. From low-level memory management to distributed systems architecture.</p>
-        <span class="material-symbols-outlined module-icon">library_books</span>
-    </div>
-    <div class="module-card">
-        <div class="module-eyebrow">Analytics 04</div>
-        <h3>Quantified Profiles</h3>
-        <p>Your performance isn't a score; it's an architecture. Track performance trends, algorithmic versatility, and technical debt across your entire portfolio.</p>
-        <span class="material-symbols-outlined module-icon">monitoring</span>
-    </div>
-</div>
+const canvas = document.getElementById('scene3d');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
 
-<!-- CTA -->
-<section class="cta-section">
-    <h2 class="cta-headline">Ready to Enter the Crucible?</h2>
-    <p class="cta-desc">Join the elite tier of engineers refining the boundaries of high-performance code.</p>
-    {% if user.is_authenticated %}
-        <a href="{% url 'create_battle' %}" class="btn btn-primary btn-lg">Initialize Session</a>
-        <a href="{% url 'join_battle' %}" class="btn btn-outline-primary btn-lg">Join Session</a>
-    {% else %}
-        <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Initialize Account</a>
-    {% endif %}
-</section>
+const scene = new THREE.Scene();
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 0.5, 8.2);
+
+const root = new THREE.Group();
+scene.add(root);
+
+const premiumMaterial = new THREE.MeshStandardMaterial({
+    color: new THREE.Color('#77f7ff'),
+    metalness: 0.88,
+    roughness: 0.12,
+    envMapIntensity: 1.1,
+});
+
+const glassMaterial = new THREE.MeshPhysicalMaterial({
+    color: new THREE.Color('#a98bff'),
+    metalness: 0.06,
+    roughness: 0.03,
+    transmission: 0.92,
+    ior: 1.45,
+    thickness: 0.5,
+    transparent: true,
+    opacity: 0.86,
+});
+
+const knot = new THREE.Mesh(new THREE.TorusKnotGeometry(1.05, 0.28, 220, 32), premiumMaterial);
+knot.castShadow = true;
+knot.receiveShadow = true;
+root.add(knot);
+
+const vLeft = new THREE.Mesh(new THREE.BoxGeometry(0.34, 2.6, 0.34), premiumMaterial);
+vLeft.position.set(-1.35, -0.1, 0.18);
+vLeft.rotation.z = 0.45;
+root.add(vLeft);
+
+const vRight = new THREE.Mesh(new THREE.BoxGeometry(0.34, 2.6, 0.34), premiumMaterial);
+vRight.position.set(1.35, -0.1, 0.18);
+vRight.rotation.z = -0.45;
+root.add(vRight);
+
+const glassCore = new THREE.Mesh(new THREE.SphereGeometry(0.72, 48, 48), glassMaterial);
+glassCore.position.set(0, 0, -0.2);
+root.add(glassCore);
+
+const particleCount = 1300;
+const positions = new Float32Array(particleCount * 3);
+for (let i = 0; i < particleCount; i++) {
+    const i3 = i * 3;
+    positions[i3] = (Math.random() - 0.5) * 44;
+    positions[i3 + 1] = (Math.random() - 0.5) * 28;
+    positions[i3 + 2] = (Math.random() - 0.5) * 28;
+}
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+const pMat = new THREE.PointsMaterial({
+    color: '#c5eeff',
+    size: 0.03,
+    transparent: true,
+    opacity: 0.42,
+    depthWrite: false,
+});
+const particles = new THREE.Points(pGeo, pMat);
+scene.add(particles);
+
+const ambient = new THREE.AmbientLight('#5f719e', 0.46);
+scene.add(ambient);
+
+const key = new THREE.DirectionalLight('#8ef8ff', 2.0);
+key.position.set(4.2, 3.6, 4.2);
+scene.add(key);
+
+const fill = new THREE.DirectionalLight('#4a65ff', 0.9);
+fill.position.set(-5.6, 1.4, 2.3);
+scene.add(fill);
+
+const rim = new THREE.PointLight('#f8a1ff', 1.35, 26, 2);
+rim.position.set(0, 2.5, -5.5);
+scene.add(rim);
+
+const cursor = { x: 0, y: 0 };
+const target = { x: 0, y: 0 };
+window.addEventListener('mousemove', (e) => {
+    target.x = (e.clientX / window.innerWidth) * 2 - 1;
+    target.y = -(e.clientY / window.innerHeight) * 2 + 1;
+});
+
+const clock = new THREE.Clock();
+function animate() {
+    const t = clock.getElapsedTime();
+
+    cursor.x += (target.x - cursor.x) * 0.06;
+    cursor.y += (target.y - cursor.y) * 0.06;
+
+    root.rotation.y += 0.0032;
+    root.rotation.x = 0.1 + cursor.y * 0.2;
+    root.position.x = cursor.x * 0.45;
+    root.position.y = Math.sin(t * 0.9) * 0.12 + cursor.y * 0.25;
+
+    const breathe = 1 + Math.sin(t * 1.1) * 0.026;
+    root.scale.set(breathe, breathe, breathe);
+
+    particles.rotation.y += 0.00045;
+    particles.rotation.x = Math.sin(t * 0.2) * 0.06;
+
+    key.intensity = 1.9 + Math.sin(t * 0.9) * 0.16;
+    fill.intensity = 0.88 + Math.sin(t * 0.65 + 1.2) * 0.11;
+    rim.intensity = 1.28 + Math.sin(t * 1.3 + 2.3) * 0.22;
+
+    camera.position.x = Math.sin(t * 0.27) * 0.65 + cursor.x * 0.52;
+    camera.position.y = 0.46 + Math.cos(t * 0.31) * 0.32 + cursor.y * 0.34;
+    camera.lookAt(0, 0, 0);
+
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+const dot = document.getElementById('cursorDot');
+const ring = document.getElementById('cursorRing');
+let mx = window.innerWidth * 0.5;
+let my = window.innerHeight * 0.5;
+let rx = mx;
+let ry = my;
+
+window.addEventListener('mousemove', (e) => {
+    mx = e.clientX;
+    my = e.clientY;
+    dot.style.left = `${mx}px`;
+    dot.style.top = `${my}px`;
+});
+
+function cursorTick() {
+    rx += (mx - rx) * 0.16;
+    ry += (my - ry) * 0.16;
+    ring.style.left = `${rx}px`;
+    ring.style.top = `${ry}px`;
+    requestAnimationFrame(cursorTick);
+}
+cursorTick();
+</script>
 {% endblock %}

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -114,9 +114,5 @@
     <script src="{% static 'battles/js/site.js' %}"></script>
     {% block extra_js %}{% endblock %}
     {% block scripts %}{% endblock %}
-    <script>
-        // Force light theme across the app
-        document.documentElement.setAttribute('data-theme', 'light');
-    </script>
 </body>
 </html>
