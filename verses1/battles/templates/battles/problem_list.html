@@ -170,6 +170,23 @@ html { scroll-behavior: smooth; }
     display: inline-flex;
     gap: 0.4rem;
 }
+.virtual-scroll-viewport {
+    max-height: min(70vh, 780px);
+    overflow-y: auto;
+}
+.virtual-scroll-viewport table {
+    table-layout: fixed;
+}
+.virtual-scroll-viewport td,
+.virtual-scroll-viewport th {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.virtual-spacer td {
+    padding: 0 !important;
+    border-bottom: 0;
+}
 .pagination-wrap {
     display: flex;
     justify-content: space-between;
@@ -268,76 +285,129 @@ html { scroll-behavior: smooth; }
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for problem in problems %}
-                <tr onclick="window.location='{% url 'problem_detail' problem.slug %}'">
-                    <td>
-                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--outline);">#{{ forloop.counter|stringformat:"03d" }}</span>
-                    </td>
-                    <td>
-                        <div class="problem-title">{{ problem.title }}</div>
-                        <div class="problem-sub">{{ problem.description|truncatewords:10 }}</div>
-                    </td>
-                    <td>
-                        <span class="diff {{ problem.difficulty }}">{{ problem.get_difficulty_display }}</span>
-                    </td>
-                    <td>
-                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--outline);">{{ problem.time_limit_seconds }}s / {{ problem.memory_limit_mb }}MB</span>
-                    </td>
-                    <td>
-                        {% if problem.id in solved_problems %}
-                            <span class="material-symbols-outlined" style="color:var(--secondary);font-variation-settings:'FILL' 1;">check_circle</span>
-                        {% else %}
-                            <span class="material-symbols-outlined" style="color:var(--outline-variant);">play_arrow</span>
-                        {% endif %}
-                    </td>
-                    <td class="text-end" onclick="event.stopPropagation();">
-                        <span class="action-stack">
-                            <a href="{% url 'problem_detail' problem.slug %}" class="btn btn-sm btn-outline-primary">View</a>
-                            <form action="{% url 'create_battle' %}" method="post" style="display:inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="problem" value="{{ problem.id }}">
-                                <button type="submit" class="btn btn-sm btn-primary">Duel</button>
-                            </form>
-                        </span>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center py-4" style="color:var(--outline);">No problems matched the selected filters.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
         </table>
+
+        <div class="virtual-scroll-viewport" id="problemsViewport">
+            <table>
+                <tbody id="virtualProblemsBody"></tbody>
+            </table>
+        </div>
+
         <div class="table-footer">
-            <span class="table-footer-info">Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries</span>
+            <span class="table-footer-info" id="problemsCountInfo">Showing 0 entries</span>
         </div>
-        {% if page_obj.paginator.num_pages > 1 %}
-        <div class="pagination-wrap">
-            <span class="table-footer-info">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-            <div class="pagination-links">
-                {% if page_obj.has_previous %}
-                    <a class="page-link-btn" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.previous_page_number }}#problemsTable">Prev</a>
-                {% else %}
-                    <span class="page-link-btn disabled">Prev</span>
-                {% endif %}
-
-                {% for page_num in page_obj.paginator.page_range %}
-                    {% if page_num == page_obj.number %}
-                        <span class="page-link-btn active">{{ page_num }}</span>
-                    {% elif page_num >= page_obj.number|add:'-2' and page_num <= page_obj.number|add:'2' %}
-                        <a class="page-link-btn" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_num }}#problemsTable">{{ page_num }}</a>
-                    {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                    <a class="page-link-btn" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.next_page_number }}#problemsTable">Next</a>
-                {% else %}
-                    <span class="page-link-btn disabled">Next</span>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
+{{ problem_rows|json_script:"problemRowsData" }}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const rows = JSON.parse(document.getElementById('problemRowsData').textContent || '[]');
+    const viewport = document.getElementById('problemsViewport');
+    const tbody = document.getElementById('virtualProblemsBody');
+    const countInfo = document.getElementById('problemsCountInfo');
+
+    const rowHeight = 78;
+    const overscan = 8;
+    const detailUrlTemplate = "{% url 'problem_detail' '__slug__' %}";
+    const duelUrlTemplate = "{% url 'create_battle' %}?problem=__id__";
+
+    function escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function truncateWords(text, wordCount) {
+        const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+        if (words.length <= wordCount) {
+            return words.join(' ');
+        }
+        return `${words.slice(0, wordCount).join(' ')}...`;
+    }
+
+    function rowHtml(problem, index) {
+        const detailUrl = detailUrlTemplate.replace('__slug__', encodeURIComponent(problem.slug));
+        const duelUrl = duelUrlTemplate.replace('__id__', problem.id);
+        const statusHtml = problem.is_solved
+            ? `<span class="material-symbols-outlined" style="color:var(--secondary);font-variation-settings:'FILL' 1;">check_circle</span>`
+            : `<span class="material-symbols-outlined" style="color:var(--outline-variant);">play_arrow</span>`;
+
+        return `
+            <tr data-href="${detailUrl}" class="problem-row">
+                <td><span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--outline);">#${String(index + 1).padStart(3, '0')}</span></td>
+                <td>
+                    <div class="problem-title">${escapeHtml(problem.title)}</div>
+                    <div class="problem-sub">${escapeHtml(truncateWords(problem.description, 10))}</div>
+                </td>
+                <td><span class="diff ${escapeHtml(problem.difficulty_key)}">${escapeHtml(problem.difficulty)}</span></td>
+                <td><span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--outline);">${escapeHtml(problem.time_limit_seconds)}s / ${escapeHtml(problem.memory_limit_mb)}MB</span></td>
+                <td>${statusHtml}</td>
+                <td class="text-end" onclick="event.stopPropagation();">
+                    <span class="action-stack">
+                        <a href="${detailUrl}" class="btn btn-sm btn-outline-primary">View</a>
+                        <a href="${duelUrl}" class="btn btn-sm btn-primary">Duel</a>
+                    </span>
+                </td>
+            </tr>
+        `;
+    }
+
+    function renderRows() {
+        if (!rows.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4" style="color:var(--outline);">No problems matched the selected filters.</td></tr>';
+            countInfo.textContent = 'Showing 0 entries';
+            return;
+        }
+
+        const viewportHeight = viewport.clientHeight;
+        const scrollTop = viewport.scrollTop;
+        const visibleRows = Math.ceil(viewportHeight / rowHeight);
+
+        const startIndex = Math.max(0, Math.floor(scrollTop / rowHeight) - overscan);
+        const endIndex = Math.min(rows.length, startIndex + visibleRows + overscan * 2);
+
+        const topSpacer = startIndex * rowHeight;
+        const bottomSpacer = (rows.length - endIndex) * rowHeight;
+
+        let html = '';
+        if (topSpacer > 0) {
+            html += `<tr class="virtual-spacer"><td colspan="6" style="height:${topSpacer}px"></td></tr>`;
+        }
+
+        for (let i = startIndex; i < endIndex; i += 1) {
+            html += rowHtml(rows[i], i);
+        }
+
+        if (bottomSpacer > 0) {
+            html += `<tr class="virtual-spacer"><td colspan="6" style="height:${bottomSpacer}px"></td></tr>`;
+        }
+
+        tbody.innerHTML = html;
+        countInfo.textContent = `Showing ${startIndex + 1}-${endIndex} of ${rows.length} entries`;
+    }
+
+    viewport.addEventListener('scroll', renderRows);
+    viewport.addEventListener('click', function (event) {
+        const row = event.target.closest('tr.problem-row');
+        if (!row) {
+            return;
+        }
+        if (event.target.closest('a,button,input,form')) {
+            return;
+        }
+        const href = row.getAttribute('data-href');
+        if (href) {
+            window.location.href = href;
+        }
+    });
+
+    renderRows();
+})();
+</script>
 {% endblock %}

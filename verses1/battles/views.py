@@ -65,9 +65,8 @@ def problem_list(request):
     if difficulty:
         problems = problems.filter(difficulty=difficulty)
     
-    problems = problems.order_by('difficulty', 'title').distinct()
-    total_filtered_problems = problems.count()
-    page_obj, query_string = _paginate(request, problems, per_page=12)
+    problems = list(problems.order_by('difficulty', 'title').distinct())
+    total_filtered_problems = len(problems)
     categories = Category.objects.all()
     
     # Get user's solved problems
@@ -81,9 +80,21 @@ def problem_list(request):
         )
     
     return render(request, 'battles/problem_list.html', {
-        'problems': page_obj,
-        'page_obj': page_obj,
-        'query_string': query_string,
+        'problems': problems,
+        'problem_rows': [
+            {
+                'id': problem.id,
+                'slug': problem.slug,
+                'title': problem.title,
+                'description': problem.description,
+                'difficulty': problem.get_difficulty_display(),
+                'difficulty_key': problem.difficulty,
+                'time_limit_seconds': problem.time_limit_seconds,
+                'memory_limit_mb': problem.memory_limit_mb,
+                'is_solved': problem.id in solved_problems,
+            }
+            for problem in problems
+        ],
         'total_filtered_problems': total_filtered_problems,
         'categories': categories,
         'selected_category': category_slug,
