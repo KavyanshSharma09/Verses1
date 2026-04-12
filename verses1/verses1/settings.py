@@ -253,5 +253,5 @@ def _parse_oauth_providers(raw: str) -> tuple[str, ...]:
 
 
 SUPABASE_OAUTH_PROVIDERS = _parse_oauth_providers(
-    os.environ.get('SUPABASE_OAUTH_PROVIDERS', 'google,github')
-) or ('google', 'github')
+    os.environ.get('SUPABASE_OAUTH_PROVIDERS', 'google')
+) or ('google',)

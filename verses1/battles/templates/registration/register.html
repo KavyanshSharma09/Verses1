@@ -158,12 +158,6 @@
         >
             Sign up with Google (Supabase)
         </a>
-        <a
-            href="{% url 'supabase_oauth_start' 'github' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}"
-            class="oauth-btn"
-        >
-            Sign up with GitHub (Supabase)
-        </a>
     </div>
     <p class="text-center mt-4" style="font-size:0.85rem;color:var(--outline);">
         Already have an account? <a href="{% url 'login' %}" style="color:var(--primary);font-weight:600;">Sign in</a>

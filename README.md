@@ -191,21 +191,20 @@ Use this flow when moving existing data from local SQLite to your Render Postgre
 - `DEBUG=False`
 - `DATABASE_URL` (required when `DEBUG=False`)
 
-### Supabase OAuth Setup (Google/GitHub)
+### Supabase OAuth Setup (Google)
 
-1. Enable OAuth providers in Supabase:
+1. Enable OAuth provider in Supabase:
    - Supabase Dashboard -> Authentication -> Providers
-   - Enable `Google` and/or `GitHub`
+   - Enable `Google`
 2. Add redirect URLs in each provider config:
    - Production: `https://verses1-4.onrender.com/oauth/supabase/callback/`
    - Local: `http://127.0.0.1:8000/oauth/supabase/callback/`
 3. Set these environment variables in Render:
    - `SUPABASE_URL` (example: `https://<project-ref>.supabase.co`)
    - `SUPABASE_ANON_KEY`
-   - `SUPABASE_OAUTH_PROVIDERS` (optional, default: `google,github`)
+   - `SUPABASE_OAUTH_PROVIDERS` (optional, default: `google`)
 4. Deploy and use the login page buttons:
    - `Sign in with Google (Supabase)`
-   - `Sign in with GitHub (Supabase)`
 
 ### Using Supabase (Alternative to Render Postgres)
 
