@@ -19,6 +19,15 @@ from .forms import UserRegistrationForm
 from .models import UserStats
 
 
+def _normalize_provider_name(provider: str) -> str:
+    aliases = {
+        'google-oauth2': 'google',
+        'google_oauth2': 'google',
+        'googleoauth2': 'google',
+    }
+    return aliases.get((provider or '').strip().lower(), (provider or '').strip().lower())
+
+
 class RateLimitedLoginView(DjangoLoginView):
     """Custom login view with rate limiting and remember me functionality"""
     
@@ -83,8 +92,11 @@ def _build_unique_username(seed: str) -> str:
 def supabase_oauth_start(request, provider):
     supabase_url = (getattr(settings, 'SUPABASE_URL', '') or '').rstrip('/')
     supabase_anon_key = getattr(settings, 'SUPABASE_ANON_KEY', '') or ''
-    allowed_providers = set(getattr(settings, 'SUPABASE_OAUTH_PROVIDERS', ('google', 'github')))
-    provider = (provider or '').lower()
+    allowed_providers = {
+        _normalize_provider_name(name)
+        for name in getattr(settings, 'SUPABASE_OAUTH_PROVIDERS', ('google', 'github'))
+    }
+    provider = _normalize_provider_name(provider)
 
     if not supabase_url or not supabase_anon_key:
         missing = []
@@ -96,7 +108,8 @@ def supabase_oauth_start(request, provider):
         return redirect('login')
 
     if provider not in allowed_providers:
-        messages.error(request, 'Unsupported OAuth provider.')
+        allowed_list = ', '.join(sorted(allowed_providers)) or 'google, github'
+        messages.error(request, f'Unsupported OAuth provider. Allowed providers: {allowed_list}.')
         return redirect('login')
 
     request.session['supabase_oauth_next'] = _safe_next_url(request, request.GET.get('next', '/'))

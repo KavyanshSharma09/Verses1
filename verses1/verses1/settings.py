@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import re
 import socket
 from typing import Any, cast
 from django.core.exceptions import ImproperlyConfigured
@@ -228,8 +229,29 @@ SUPABASE_ANON_KEY = _get_first_env(
     'SUPABASE_PUBLISHABLE_KEY',
     'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
 )
-SUPABASE_OAUTH_PROVIDERS = tuple(
-    provider.strip().lower()
-    for provider in os.environ.get('SUPABASE_OAUTH_PROVIDERS', 'google,github').split(',')
-    if provider.strip()
-)
+
+
+def _normalize_oauth_provider(provider: str) -> str:
+    provider = provider.strip().lower()
+    aliases = {
+        'google-oauth2': 'google',
+        'google_oauth2': 'google',
+        'googleoauth2': 'google',
+    }
+    return aliases.get(provider, provider)
+
+
+def _parse_oauth_providers(raw: str) -> tuple[str, ...]:
+    parsed = []
+    seen = set()
+    for provider in re.split(r'[,;\s]+', raw):
+        normalized = _normalize_oauth_provider(provider)
+        if normalized and normalized not in seen:
+            seen.add(normalized)
+            parsed.append(normalized)
+    return tuple(parsed)
+
+
+SUPABASE_OAUTH_PROVIDERS = _parse_oauth_providers(
+    os.environ.get('SUPABASE_OAUTH_PROVIDERS', 'google,github')
+) or ('google', 'github')
