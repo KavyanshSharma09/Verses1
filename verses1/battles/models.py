@@ -63,6 +63,9 @@ class ProblemStatement(models.Model):
     
     class Meta:
         ordering = ['difficulty', 'title']
+        indexes = [
+            models.Index(fields=['is_active', 'difficulty', 'title'], name='prob_active_diff_title_idx'),
+        ]
     
     def __str__(self):
         return f"[{self.get_difficulty_display()}] {self.title}"
@@ -89,6 +92,9 @@ class TestCase(models.Model):
     
     class Meta:
         ordering = ['order']
+        indexes = [
+            models.Index(fields=['problem', 'is_hidden', 'order'], name='tc_prob_hidden_order_idx'),
+        ]
     
     def __str__(self):
         hidden_str = " (hidden)" if self.is_hidden else ""
@@ -103,6 +109,13 @@ class Battle(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_completed = models.BooleanField(default=False)
     winner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='won_battles')
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['is_completed', 'created_at'], name='bat_complete_created_idx'),
+            models.Index(fields=['creator', 'is_completed'], name='bat_creator_complete_idx'),
+            models.Index(fields=['opponent', 'is_completed'], name='bat_opponent_complete_idx'),
+        ]
 
     def __str__(self):
         problem_title = self.problem.title if self.problem else 'No Problem'
@@ -158,6 +171,12 @@ class CodeSubmission(models.Model):
     analysis_completed = models.BooleanField(default=False)
     analysis_error = models.TextField(null=True, blank=True)
     analysis_version = models.CharField(max_length=10, default='1.0')
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['battle', 'all_tests_passed'], name='cs_battle_passed_idx'),
+            models.Index(fields=['battle', 'user', 'all_tests_passed'], name='cs_battle_user_passed_idx'),
+        ]
 
     def __str__(self):
         return f"Submission by {self.user.username} for battle {self.battle.battle_code}"
@@ -254,6 +273,12 @@ class LoginActivity(models.Model):
     user_agent = models.CharField(max_length=512, null=True, blank=True)
     timestamp = models.DateTimeField(default=timezone.now)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['timestamp'], name='la_timestamp_idx'),
+            models.Index(fields=['user', 'timestamp'], name='la_user_timestamp_idx'),
+        ]
+
     def __str__(self):
         return f"Login: {self.user.username} @ {self.timestamp.isoformat()}"
 
@@ -280,6 +305,10 @@ class PracticeSubmission(models.Model):
     
     class Meta:
         ordering = ['-submitted_at']
+        indexes = [
+            models.Index(fields=['user', 'problem', 'submitted_at'], name='ps_user_prob_submitted_idx'),
+            models.Index(fields=['user', 'all_tests_passed'], name='ps_user_passed_idx'),
+        ]
     
     def __str__(self):
         status = "✓" if self.all_tests_passed else "✗"
