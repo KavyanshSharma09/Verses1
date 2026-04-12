@@ -87,7 +87,12 @@ def supabase_oauth_start(request, provider):
     provider = (provider or '').lower()
 
     if not supabase_url or not supabase_anon_key:
-        messages.error(request, 'Supabase OAuth is not configured yet.')
+        missing = []
+        if not supabase_url:
+            missing.append('SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL)')
+        if not supabase_anon_key:
+            missing.append('SUPABASE_ANON_KEY (or NEXT_PUBLIC_SUPABASE_ANON_KEY)')
+        messages.error(request, f"Supabase OAuth is not configured yet. Missing: {', '.join(missing)}")
         return redirect('login')
 
     if provider not in allowed_providers:

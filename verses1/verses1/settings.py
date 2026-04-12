@@ -213,8 +213,21 @@ LOGIN_URL = '/login/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
 
 # Supabase OAuth settings
-SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip().rstrip('/')
-SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY', '').strip()
+def _get_first_env(*names: str) -> str:
+    for name in names:
+        value = os.environ.get(name, '').strip()
+        if value:
+            return value
+    return ''
+
+
+SUPABASE_URL = _get_first_env('SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL').rstrip('/')
+SUPABASE_ANON_KEY = _get_first_env(
+    'SUPABASE_ANON_KEY',
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    'SUPABASE_PUBLISHABLE_KEY',
+    'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
+)
 SUPABASE_OAUTH_PROVIDERS = tuple(
     provider.strip().lower()
     for provider in os.environ.get('SUPABASE_OAUTH_PROVIDERS', 'google,github').split(',')
