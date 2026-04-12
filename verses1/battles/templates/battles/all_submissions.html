@@ -4,6 +4,8 @@
 
 {% block extra_css %}
 <style>
+html { scroll-behavior: smooth; }
+
 .sub-header {
     margin-bottom: 1.5rem;
 }
@@ -43,6 +45,41 @@
 }
 .status-ok { color: var(--secondary); font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
 .status-bad { color: #ff6b6b; font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.pagination-wrap {
+    margin-top: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+.pagination-links {
+    display: inline-flex;
+    gap: 0.4rem;
+}
+.page-link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    color: var(--outline);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+}
+.page-link-btn.active {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: rgba(0, 218, 243, 0.12);
+}
+.page-link-btn.disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
 </style>
 {% endblock %}
 
@@ -58,7 +95,7 @@
     <div class="summary"><div class="k">Displayed Records</div><div class="v">{{ submissions|length }}</div></div>
 </div>
 
-<div class="problems-table">
+<div class="problems-table" id="submissionsTable">
     <table>
         <thead>
             <tr>
@@ -89,6 +126,33 @@
         </tbody>
     </table>
 </div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="pagination-wrap">
+    <span class="table-footer-info">Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+    <div class="pagination-links">
+        {% if page_obj.has_previous %}
+            <a class="page-link-btn" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.previous_page_number }}#submissionsTable">Prev</a>
+        {% else %}
+            <span class="page-link-btn disabled">Prev</span>
+        {% endif %}
+
+        {% for page_num in page_obj.paginator.page_range %}
+            {% if page_num == page_obj.number %}
+                <span class="page-link-btn active">{{ page_num }}</span>
+            {% elif page_num >= page_obj.number|add:'-2' and page_num <= page_obj.number|add:'2' %}
+                <a class="page-link-btn" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_num }}#submissionsTable">{{ page_num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a class="page-link-btn" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.next_page_number }}#submissionsTable">Next</a>
+        {% else %}
+            <span class="page-link-btn disabled">Next</span>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 
 <div class="mt-3">
     <a href="{% url 'practice' %}" class="btn btn-primary">

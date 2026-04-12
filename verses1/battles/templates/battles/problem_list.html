@@ -4,6 +4,8 @@
 
 {% block extra_css %}
 <style>
+html { scroll-behavior: smooth; }
+
 .bank-container {
     display: grid;
     grid-template-columns: 1fr;
@@ -168,6 +170,49 @@
     display: inline-flex;
     gap: 0.4rem;
 }
+.pagination-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    padding: 0.85rem 1.2rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.pagination-links {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+.page-link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    color: var(--outline);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    transition: all 0.2s ease;
+}
+.page-link-btn:hover {
+    color: var(--on-surface);
+    border-color: var(--primary);
+    background: rgba(0, 218, 243, 0.08);
+}
+.page-link-btn.active {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: rgba(0, 218, 243, 0.12);
+}
+.page-link-btn.disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
 </style>
 {% endblock %}
 
@@ -180,7 +225,7 @@
                 <div>
                     <div class="eyebrow">Library Node // Accessing Database</div>
                     <h2>The Library</h2>
-                    <div class="subtitle">Accessing database: {{ problems|length }} active challenge modules</div>
+                    <div class="subtitle">Accessing database: {{ total_filtered_problems }} active challenge modules</div>
                 </div>
                 <a href="{% url 'create_battle' %}" class="btn btn-primary">New Duel</a>
             </div>
@@ -211,7 +256,7 @@
     </div>
 
     <!-- Problems Table -->
-    <div class="problems-table">
+    <div class="problems-table" id="problemsTable">
         <table>
             <thead>
                 <tr>
@@ -265,8 +310,34 @@
             </tbody>
         </table>
         <div class="table-footer">
-            <span class="table-footer-info">Showing {{ problems|length }} entries</span>
+            <span class="table-footer-info">Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries</span>
         </div>
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination-wrap">
+            <span class="table-footer-info">Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            <div class="pagination-links">
+                {% if page_obj.has_previous %}
+                    <a class="page-link-btn" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.previous_page_number }}#problemsTable">Prev</a>
+                {% else %}
+                    <span class="page-link-btn disabled">Prev</span>
+                {% endif %}
+
+                {% for page_num in page_obj.paginator.page_range %}
+                    {% if page_num == page_obj.number %}
+                        <span class="page-link-btn active">{{ page_num }}</span>
+                    {% elif page_num >= page_obj.number|add:'-2' and page_num <= page_obj.number|add:'2' %}
+                        <a class="page-link-btn" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_num }}#problemsTable">{{ page_num }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <a class="page-link-btn" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.next_page_number }}#problemsTable">Next</a>
+                {% else %}
+                    <span class="page-link-btn disabled">Next</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

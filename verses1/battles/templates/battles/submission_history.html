@@ -4,6 +4,8 @@
 
 {% block extra_css %}
 <style>
+html { scroll-behavior: smooth; }
+
 .submission-card {
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 2px;
@@ -79,6 +81,41 @@
     margin-bottom: 16px;
     opacity: 0.5;
 }
+.pagination-wrap {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+.pagination-links {
+    display: inline-flex;
+    gap: 0.4rem;
+}
+.page-link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 0.65rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    color: var(--outline);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+}
+.page-link-btn.active {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: rgba(0, 218, 243, 0.12);
+}
+.page-link-btn.disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
 </style>
 {% endblock %}
 
@@ -104,7 +141,7 @@
                 </svg>
                 Submission History
             </h2>
-            <p class="text-secondary mb-0">{{ problem.title }} • {{ submissions.count }} submission{{ submissions.count|pluralize }}</p>
+            <p class="text-secondary mb-0">{{ problem.title }} • {{ page_obj.paginator.count }} submission{{ page_obj.paginator.count|pluralize }}</p>
         </div>
         <a href="{% url 'practice_problem' problem.slug %}" class="btn btn-primary">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
@@ -116,7 +153,7 @@
     </div>
 
     {% if submissions %}
-    <div class="submissions-list">
+    <div class="submissions-list" id="historyList">
         {% for submission in submissions %}
         <a href="{% url 'submission_detail' submission.id %}" class="text-decoration-none">
             <div class="submission-card">
@@ -182,6 +219,33 @@
         </a>
         {% endfor %}
     </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="pagination-wrap">
+        <span class="table-footer-info">Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }}</span>
+        <div class="pagination-links">
+            {% if page_obj.has_previous %}
+                <a class="page-link-btn" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.previous_page_number }}#historyList">Prev</a>
+            {% else %}
+                <span class="page-link-btn disabled">Prev</span>
+            {% endif %}
+
+            {% for page_num in page_obj.paginator.page_range %}
+                {% if page_num == page_obj.number %}
+                    <span class="page-link-btn active">{{ page_num }}</span>
+                {% elif page_num >= page_obj.number|add:'-2' and page_num <= page_obj.number|add:'2' %}
+                    <a class="page-link-btn" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_num }}#historyList">{{ page_num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <a class="page-link-btn" href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.next_page_number }}#historyList">Next</a>
+            {% else %}
+                <span class="page-link-btn disabled">Next</span>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
     {% else %}
     <div class="empty-state">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">

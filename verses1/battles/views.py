@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db import models
+from django.core.paginator import Paginator
+from urllib.parse import urlencode
 from .forms import UserRegistrationForm, BattleCreationForm, CodeSubmissionForm, BattleJoinForm
 from .models import Battle, CodeSubmission, BattleResult, ProblemStatement, Category, PracticeSubmission, UserStats
 from .models import LoginActivity
@@ -10,6 +12,18 @@ from . import utils
 from django.http import JsonResponse
 from django.urls import reverse
 import json
+
+
+def _querystring_without_page(request):
+    params = request.GET.copy()
+    params.pop('page', None)
+    return urlencode(params, doseq=True)
+
+
+def _paginate(request, queryset, per_page=12):
+    paginator = Paginator(queryset, per_page)
+    page_obj = paginator.get_page(request.GET.get('page'))
+    return page_obj, _querystring_without_page(request)
 
 def home(request):
     # Show available problems on home page
@@ -52,6 +66,8 @@ def problem_list(request):
         problems = problems.filter(difficulty=difficulty)
     
     problems = problems.order_by('difficulty', 'title').distinct()
+    total_filtered_problems = problems.count()
+    page_obj, query_string = _paginate(request, problems, per_page=12)
     categories = Category.objects.all()
     
     # Get user's solved problems
@@ -65,7 +81,10 @@ def problem_list(request):
         )
     
     return render(request, 'battles/problem_list.html', {
-        'problems': problems,
+        'problems': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
+        'total_filtered_problems': total_filtered_problems,
         'categories': categories,
         'selected_category': category_slug,
         'selected_difficulty': difficulty,
@@ -397,17 +416,20 @@ def battle_status(request, battle_id):
 def battle_history(request):
     user_battles = Battle.objects.filter(is_completed=True).filter(
         models.Q(creator=request.user) | models.Q(opponent=request.user)
-    ).order_by('-created_at')
+    ).select_related('creator', 'opponent', 'problem', 'battleresult').order_by('-created_at')
+
+    page_obj, query_string = _paginate(request, user_battles, per_page=12)
     
     battle_rows = []
-    for b in user_battles:
-        try:
-            res = BattleResult.objects.get(battle=b)
-        except BattleResult.DoesNotExist:
-            res = None
+    for b in page_obj:
+        res = getattr(b, 'battleresult', None)
         battle_rows.append({'battle': b, 'result': res})
 
-    return render(request, 'battles/battle_history.html', {'battle_rows': battle_rows})
+    return render(request, 'battles/battle_history.html', {
+        'battle_rows': battle_rows,
+        'page_obj': page_obj,
+        'query_string': query_string,
+    })
 
 
 @staff_member_required
@@ -674,10 +696,14 @@ def submission_history(request, slug):
         user=request.user,
         problem=problem
     ).order_by('-submitted_at')
+
+    page_obj, query_string = _paginate(request, submissions, per_page=10)
     
     return render(request, 'battles/submission_history.html', {
         'problem': problem,
-        'submissions': submissions,
+        'submissions': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
     })
 
 
@@ -717,8 +743,12 @@ def all_submissions(request):
         if sub.all_tests_passed:
             problem_stats[sub.problem_id]['passed'] += 1
     
+    page_obj, query_string = _paginate(request, submissions, per_page=20)
+
     return render(request, 'battles/all_submissions.html', {
-        'submissions': submissions[:50],  # Latest 50
+        'submissions': page_obj,
+        'page_obj': page_obj,
+        'query_string': query_string,
         'problem_stats': problem_stats.values(),
         'total_submissions': submissions.count(),
     })
