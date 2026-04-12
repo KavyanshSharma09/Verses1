@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Completing Sign In - Verses1{% endblock %}
+
+{% block extra_css %}
+<style>
+.oauth-complete-shell {
+    max-width: 520px;
+    margin: 3rem auto;
+}
+.oauth-complete-card {
+    background: var(--surface-container);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+    padding: 2rem;
+}
+.oauth-complete-card h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.45rem;
+    margin-bottom: 0.75rem;
+}
+.oauth-complete-card p {
+    color: var(--on-surface-variant);
+    margin-bottom: 0.5rem;
+}
+.oauth-status {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--outline);
+    font-family: 'JetBrains Mono', monospace;
+}
+.oauth-status.error {
+    color: #ff6b6b;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="oauth-complete-shell">
+    <div class="oauth-complete-card">
+        <h2>Completing Supabase OAuth</h2>
+        <p>Please wait while we validate your session and sign you in.</p>
+        <p class="oauth-status" id="oauthStatus">Validating token...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const statusEl = document.getElementById('oauthStatus');
+    const completeUrl = "{{ complete_url }}";
+    const nonce = "{{ oauth_nonce|escapejs }}";
+
+    function readHashToken() {
+        const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+        const hashParams = new URLSearchParams(hash);
+        const queryParams = new URLSearchParams(window.location.search);
+
+        const error = hashParams.get('error_description') || hashParams.get('error') || queryParams.get('error_description') || queryParams.get('error');
+        if (error) {
+            throw new Error(error);
+        }
+
+        return hashParams.get('access_token') || queryParams.get('access_token');
+    }
+
+    function fail(message) {
+        statusEl.classList.add('error');
+        statusEl.textContent = message;
+    }
+
+    async function completeLogin() {
+        let accessToken;
+        try {
+            accessToken = readHashToken();
+        } catch (err) {
+            fail(`OAuth failed: ${err.message}`);
+            return;
+        }
+
+        if (!accessToken) {
+            fail('No access token returned by Supabase. Try signing in again.');
+            return;
+        }
+
+        statusEl.textContent = 'Token received. Signing you in...';
+
+        try {
+            const response = await fetch(completeUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    access_token: accessToken,
+                    nonce: nonce
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Unable to complete OAuth login.');
+            }
+
+            statusEl.textContent = 'Success. Redirecting...';
+            window.location.replace(data.redirect_url || '/');
+        } catch (err) {
+            fail(err.message || 'Unable to complete OAuth login.');
+        }
+    }
+
+    completeLogin();
+})();
+</script>
+{% endblock %}

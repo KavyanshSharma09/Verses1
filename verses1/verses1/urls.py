@@ -2,7 +2,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from battles import views
-from battles.auth_views import RateLimitedLoginView, register
+from battles.auth_views import (
+    RateLimitedLoginView,
+    register,
+    supabase_oauth_start,
+    supabase_oauth_callback,
+    supabase_oauth_complete,
+)
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -12,6 +18,9 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('register/', register, name='register'),
     path('login/', RateLimitedLoginView.as_view(template_name='registration/login.html'), name='login'),
+    path('oauth/supabase/<str:provider>/', supabase_oauth_start, name='supabase_oauth_start'),
+    path('oauth/supabase/callback/', supabase_oauth_callback, name='supabase_oauth_callback'),
+    path('oauth/supabase/complete/', supabase_oauth_complete, name='supabase_oauth_complete'),
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     
     # Problems

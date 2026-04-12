@@ -211,3 +211,12 @@ RATELIMIT_ENABLE = True
 
 LOGIN_URL = '/login/'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/'
+
+# Supabase OAuth settings
+SUPABASE_URL = os.environ.get('SUPABASE_URL', '').strip().rstrip('/')
+SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY', '').strip()
+SUPABASE_OAUTH_PROVIDERS = tuple(
+    provider.strip().lower()
+    for provider in os.environ.get('SUPABASE_OAUTH_PROVIDERS', 'google,github').split(',')
+    if provider.strip()
+)

@@ -59,7 +59,7 @@ It extends my earlier project **PyOptimizer** (which analyzed a single file for 
 - **User Profiles** – View stats, battle history, and solved problems
 - **User Stats & Ratings** – ELO-style rating system (starting at 1200)
 - **Login Activity Tracking** – Monitor account security
-- **OAuth Support** – Social login via django-allauth
+- **OAuth Support** – Social login via Supabase OAuth (Google/GitHub)
 
 ---
 
@@ -172,7 +172,7 @@ Use this flow when moving existing data from local SQLite to your Render Postgre
    - Set `DATABASE_URL` to your target PostgreSQL connection string (Supabase or Render Postgres).
 
 3. **Deploy schema to PostgreSQL**
-   - Deploy normally; `build.sh` already runs `python manage.py migrate`.
+   - Deploy normally; app startup runs `python manage.py migrate` before Gunicorn.
 
 4. **Load data into PostgreSQL**
    ```bash
@@ -190,6 +190,22 @@ Use this flow when moving existing data from local SQLite to your Render Postgre
 - `DJANGO_SECRET_KEY`
 - `DEBUG=False`
 - `DATABASE_URL` (required when `DEBUG=False`)
+
+### Supabase OAuth Setup (Google/GitHub)
+
+1. Enable OAuth providers in Supabase:
+   - Supabase Dashboard -> Authentication -> Providers
+   - Enable `Google` and/or `GitHub`
+2. Add redirect URLs in each provider config:
+   - Production: `https://verses1-4.onrender.com/oauth/supabase/callback/`
+   - Local: `http://127.0.0.1:8000/oauth/supabase/callback/`
+3. Set these environment variables in Render:
+   - `SUPABASE_URL` (example: `https://<project-ref>.supabase.co`)
+   - `SUPABASE_ANON_KEY`
+   - `SUPABASE_OAUTH_PROVIDERS` (optional, default: `google,github`)
+4. Deploy and use the login page buttons:
+   - `Sign in with Google (Supabase)`
+   - `Sign in with GitHub (Supabase)`
 
 ### Using Supabase (Alternative to Render Postgres)
 
