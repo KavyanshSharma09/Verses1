@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from django.http import JsonResponse
 from battles import views
 from battles.auth_views import (
     RateLimitedLoginView,
@@ -11,7 +12,9 @@ from battles.auth_views import (
 )
 from django.conf import settings
 from django.conf.urls.static import static
+
 urlpatterns = [
+    path('health/', lambda request: JsonResponse({"status": "ok"}), name='health_check'),
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),  
     path('', views.home, name='home'),

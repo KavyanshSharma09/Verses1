@@ -10,3 +10,7 @@ class BattlesConfig(AppConfig):
             from . import signals  
         except Exception:
             pass
+
+        # Start the self-ping keep-alive thread on Render (prevents cold starts)
+        from .keep_alive import start as start_keep_alive
+        start_keep_alive()
