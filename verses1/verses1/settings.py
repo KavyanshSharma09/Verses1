@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
-import re
 import socket
 from typing import Any, cast
 from django.core.exceptions import ImproperlyConfigured
@@ -40,14 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',  # For django-allauth
     'battles',
     'upload',
-    'allauth',
-    'allauth.account',
 ]
-
-SITE_ID = 1
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -56,7 +50,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -177,19 +170,7 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@verses1.com')
 
-# Django-allauth Settings
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
-]
-
-ACCOUNT_LOGIN_METHODS = {'username', 'email'}
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
-ACCOUNT_EMAIL_VERIFICATION = 'optional'  # Change to 'mandatory' for required email verification
-ACCOUNT_CONFIRM_EMAIL_ON_GET = True
-ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = False
-ACCOUNT_SESSION_REMEMBER = True  # Remember Me functionality
-ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend']
 
 # Session settings - Keep users logged in for 1 year
 SESSION_COOKIE_AGE = 365 * 24 * 60 * 60  # 1 year in seconds
@@ -211,47 +192,4 @@ if not DEBUG:
 RATELIMIT_ENABLE = True
 
 LOGIN_URL = '/login/'
-ACCOUNT_LOGOUT_REDIRECT_URL = '/'
-
-# Supabase OAuth settings
-def _get_first_env(*names: str) -> str:
-    for name in names:
-        value = os.environ.get(name, '').strip()
-        if value:
-            return value
-    return ''
-
-
-SUPABASE_URL = _get_first_env('SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL').rstrip('/')
-SUPABASE_ANON_KEY = _get_first_env(
-    'SUPABASE_ANON_KEY',
-    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-    'SUPABASE_PUBLISHABLE_KEY',
-    'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
-)
-
-
-def _normalize_oauth_provider(provider: str) -> str:
-    provider = provider.strip().lower()
-    aliases = {
-        'google-oauth2': 'google',
-        'google_oauth2': 'google',
-        'googleoauth2': 'google',
-    }
-    return aliases.get(provider, provider)
-
-
-def _parse_oauth_providers(raw: str) -> tuple[str, ...]:
-    parsed = []
-    seen = set()
-    for provider in re.split(r'[,;\s]+', raw):
-        normalized = _normalize_oauth_provider(provider)
-        if normalized and normalized not in seen:
-            seen.add(normalized)
-            parsed.append(normalized)
-    return tuple(parsed)
-
-
-SUPABASE_OAUTH_PROVIDERS = _parse_oauth_providers(
-    os.environ.get('SUPABASE_OAUTH_PROVIDERS', 'google')
-) or ('google',)
+PROBLEM_FIXTURE_PATH = BASE_DIR / 'backups' / '_diagnostic-problems.json'

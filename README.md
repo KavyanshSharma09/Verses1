@@ -59,7 +59,7 @@ It extends my earlier project **PyOptimizer** (which analyzed a single file for 
 - **User Profiles** – View stats, battle history, and solved problems
 - **User Stats & Ratings** – ELO-style rating system (starting at 1200)
 - **Login Activity Tracking** – Monitor account security
-- **OAuth Support** – Social login via Supabase OAuth (Google/GitHub)
+- **Authentication** – Django's built-in username/password authentication
 
 ---
 
@@ -70,7 +70,7 @@ It extends my earlier project **PyOptimizer** (which analyzed a single file for 
 | **Backend** | Python 3.x, Django 5.2.6 |
 | **Frontend** | HTML5, CSS3, JavaScript |
 | **Database** | SQLite (dev) / PostgreSQL (production) |
-| **Authentication** | Django Auth + django-allauth |
+| **Authentication** | Django built-in authentication |
 | **Analysis Engine** | Custom AST-based Python Analyzer |
 | **Hosting** | Render |
 | **Static Files** | WhiteNoise 6.6.0 |
@@ -96,7 +96,7 @@ verses1/
 │       ├── seed_problems.py  # Seed problem statements
 │       ├── seed_categories.py # Seed categories
 │       ├── add_hidden_tests.py # Add hidden test cases
-│       └── setup_oauth.py    # OAuth configuration
+│       └── sync_problem_catalog.py # JSON problem catalog loader
 ├── upload/                   # File upload handling
 ├── verses1/                  # Project settings (settings.py, urls.py)
 ├── media/                    # User uploaded code files
@@ -111,7 +111,7 @@ verses1/
 - [x] ~~Practice Mode~~ ✅ Implemented
 - [x] ~~User Statistics & Ratings~~ ✅ Implemented
 - [x] ~~Category/Tag System~~ ✅ Implemented
-- [x] ~~OAuth/Social Login~~ ✅ Implemented
+- [x] ~~Django username/password authentication~~ ✅ Implemented
 - [x] ~~Hidden Test Cases~~ ✅ Implemented
 - [ ] Online Python Compiler with sandbox execution (Docker + FastAPI)
 - [ ] Global Leaderboards
@@ -142,7 +142,7 @@ verses1/
 4. **Seed problems & categories**
    ```bash
    python manage.py seed_categories
-   python manage.py seed_problems
+   python manage.py sync_problem_catalog
    ```
 
 5. **Run the development server**
@@ -169,7 +169,7 @@ Use this flow when moving existing data from local SQLite to your Render Postgre
 
 2. **Ensure target PostgreSQL is configured**
    - Use [render.yaml](render.yaml) as the single source of truth for Render blueprint deploys.
-   - Set `DATABASE_URL` to your target PostgreSQL connection string (Supabase or Render Postgres).
+   - Set `DATABASE_URL` to your target PostgreSQL connection string.
 
 3. **Deploy schema to PostgreSQL**
    - Deploy normally; app startup runs `python manage.py migrate` before Gunicorn.
@@ -191,35 +191,13 @@ Use this flow when moving existing data from local SQLite to your Render Postgre
 - `DEBUG=False`
 - `DATABASE_URL` (required when `DEBUG=False`)
 
-### Supabase OAuth Setup (Google)
-
-1. Enable OAuth provider in Supabase:
-   - Supabase Dashboard -> Authentication -> Providers
-   - Enable `Google`
-2. Add redirect URLs in each provider config:
-   - Production: `https://verses1-4.onrender.com/oauth/supabase/callback/`
-   - Local: `http://127.0.0.1:8000/oauth/supabase/callback/`
-3. Set these environment variables in Render:
-   - `SUPABASE_URL` (example: `https://<project-ref>.supabase.co`)
-   - `SUPABASE_ANON_KEY`
-   - `SUPABASE_OAUTH_PROVIDERS` (optional, default: `google`)
-4. Deploy and use the login page buttons:
-   - `Sign in with Google (Supabase)`
-
-### Using Supabase (Alternative to Render Postgres)
-
-Supabase works out of the box because it is PostgreSQL.
-
-1. Create a Supabase project and copy the Postgres connection string.
-2. Set `DATABASE_URL` in Render (or your host) to that Supabase URL.
-3. Ensure SSL is enabled in the URL (Supabase URLs typically include `sslmode=require`).
-4. Run the migration script:
+3. Run the migration script:
 
    ```powershell
    powershell -ExecutionPolicy Bypass -File ./scripts/migrate_sqlite_to_postgres.ps1
    ```
 
-5. Verify row counts between SQLite and Supabase:
+4. Verify row counts between SQLite and PostgreSQL:
 
    ```powershell
    powershell -ExecutionPolicy Bypass -File ./scripts/verify_sqlite_vs_postgres.ps1
@@ -227,7 +205,7 @@ Supabase works out of the box because it is PostgreSQL.
 
    This writes a verification report under `backups/migration-verify-*.json`.
 
-Tip: For production traffic, consider Supabase Session Pooler/pgBouncer connection strings if you scale to multiple app instances.
+Tip: For production traffic, use a managed PostgreSQL connection pooler if you scale to multiple app instances.
 
 ### Optional Persistent Media Storage (Recommended)
 
