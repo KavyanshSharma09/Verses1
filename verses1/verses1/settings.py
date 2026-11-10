@@ -82,9 +82,11 @@ DB_FORCE_IPV4 = os.environ.get('DB_FORCE_IPV4', 'True') == 'True'
 if DATABASE_URL:
     DATABASE_URL = DATABASE_URL.strip().strip('"').strip("'")
 
-# Never allow production to silently fall back to SQLite.
-if not DEBUG and not DATABASE_URL:
-    raise ImproperlyConfigured('DATABASE_URL must be set when DEBUG=False.')
+# Allow SQLite fallback when DATABASE_URL is not configured during database maintenance
+ALLOW_SQLITE_FALLBACK = os.environ.get('ALLOW_SQLITE_FALLBACK', 'True') == 'True'
+
+if not DEBUG and not DATABASE_URL and not ALLOW_SQLITE_FALLBACK:
+    raise ImproperlyConfigured('DATABASE_URL must be set when DEBUG=False and ALLOW_SQLITE_FALLBACK=False.')
 
 if DATABASE_URL:
     default_db = cast(
@@ -94,11 +96,13 @@ if DATABASE_URL:
     if not default_db.get('NAME'):
         default_db['NAME'] = os.environ.get('DATABASE_NAME', 'postgres')
 
+    db_options = cast(dict[str, Any], default_db.setdefault('OPTIONS', {}))
+    db_options.setdefault('connect_timeout', 10)
+
     db_host = default_db.get('HOST')
     if DB_FORCE_IPV4 and isinstance(db_host, str) and db_host and not DEBUG:
         try:
             ipv4_addr = socket.getaddrinfo(db_host, None, socket.AF_INET, socket.SOCK_STREAM)[0][4][0]
-            db_options = cast(dict[str, Any], default_db.setdefault('OPTIONS', {}))
             db_options['hostaddr'] = ipv4_addr
         except socket.gaierror:
             # Keep hostname resolution behavior if no IPv4 address is available.

@@ -48,7 +48,6 @@ def register(request):
     return render(request, 'registration/register.html', {'form': form})
 
 
-@login_required
 def problem_list(request):
     """List all available problems with category filtering"""
     category_slug = request.GET.get('category')
@@ -104,18 +103,19 @@ def problem_list(request):
     })
 
 
-@login_required
 def problem_detail(request, slug):
     """View problem details"""
     problem = get_object_or_404(ProblemStatement, slug=slug, is_active=True)
     visible_tests = problem.get_visible_test_cases()
     
     # Check if user has solved this problem
-    user_solved = PracticeSubmission.objects.filter(
-        user=request.user,
-        problem=problem,
-        all_tests_passed=True
-    ).exists()
+    user_solved = False
+    if request.user.is_authenticated:
+        user_solved = PracticeSubmission.objects.filter(
+            user=request.user,
+            problem=problem,
+            all_tests_passed=True
+        ).exists()
     
     return render(request, 'battles/problem_detail.html', {
         'problem': problem,
@@ -449,7 +449,6 @@ def login_activity(request):
     return render(request, 'battles/login_activity.html', {'activities': recent})
 
 
-@login_required
 def analyze_code_preview(request):
     """AJAX endpoint to preview code analysis before submission"""
     if request.method != 'POST':
@@ -495,7 +494,6 @@ def analyze_code_preview(request):
 
 # ============ PRACTICE MODE VIEWS ============
 
-@login_required
 def practice(request):
     """Practice mode - list problems to solve solo"""
     category_slug = request.GET.get('category')
@@ -516,16 +514,18 @@ def practice(request):
     categories = Category.objects.all()
     
     # Get user's solved problems
-    solved_problems = list(
-        PracticeSubmission.objects.filter(
-            user=request.user, 
-            all_tests_passed=True
-        ).values_list('problem_id', flat=True).distinct()
-    )
-    
-    # Get user stats
-    user_stats, _ = UserStats.objects.get_or_create(user=request.user)
-    solved_count = user_stats.problems_solved if user_stats else 0
+    solved_problems = []
+    user_stats = None
+    solved_count = 0
+    if request.user.is_authenticated:
+        solved_problems = list(
+            PracticeSubmission.objects.filter(
+                user=request.user, 
+                all_tests_passed=True
+            ).values_list('problem_id', flat=True).distinct()
+        )
+        user_stats, _ = UserStats.objects.get_or_create(user=request.user)
+        solved_count = user_stats.problems_solved if user_stats else 0
     progress_percent = int((solved_count / total_problems) * 100) if total_problems else 0
     
     return render(request, 'battles/practice.html', {
@@ -541,24 +541,26 @@ def practice(request):
     })
 
 
-@login_required
 def practice_problem(request, slug):
     """Practice a specific problem"""
     problem = get_object_or_404(ProblemStatement, slug=slug, is_active=True)
     visible_tests = problem.get_visible_test_cases()
     
     # Check if user has solved this problem
-    user_solved = PracticeSubmission.objects.filter(
-        user=request.user,
-        problem=problem,
-        all_tests_passed=True
-    ).exists()
-    
-    # Get user's previous submissions for this problem
-    user_submissions = PracticeSubmission.objects.filter(
-        user=request.user,
-        problem=problem
-    ).order_by('-submitted_at')[:5]
+    user_solved = False
+    user_submissions = []
+    if request.user.is_authenticated:
+        user_solved = PracticeSubmission.objects.filter(
+            user=request.user,
+            problem=problem,
+            all_tests_passed=True
+        ).exists()
+        
+        # Get user's previous submissions for this problem
+        user_submissions = PracticeSubmission.objects.filter(
+            user=request.user,
+            problem=problem
+        ).order_by('-submitted_at')[:5]
     
     starter_code = problem.starter_code or f"{problem.function_signature}\n    # Write your code here\n    pass"
     
@@ -571,7 +573,6 @@ def practice_problem(request, slug):
     })
 
 
-@login_required
 def practice_run_tests(request, slug):
     """AJAX endpoint to run code against test cases in practice mode"""
     if request.method != 'POST':
@@ -599,11 +600,17 @@ def practice_run_tests(request, slug):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-@login_required
 def practice_submit(request, slug):
     """Submit practice solution"""
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'error': 'Please sign in or create an account to record your solution and track your progress.',
+            'require_auth': True,
+            'login_url': reverse('login')
+        }, status=401)
     
     problem = get_object_or_404(ProblemStatement, slug=slug, is_active=True)
     

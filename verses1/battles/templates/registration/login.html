@@ -115,12 +115,39 @@
                     <input type="checkbox" name="remember_me" id="remember_me" style="accent-color:var(--primary);">
                     Remember me
                 </label>
-                <a href="{% url 'account_reset_password' %}" style="font-size:0.78rem;">Forgot password?</a>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal" style="font-size:0.78rem;">Forgot password?</a>
             </div>
+
+            {% if request.GET.next %}
+            <input type="hidden" name="next" value="{{ request.GET.next }}">
+            {% endif %}
 
             <button type="submit" class="btn btn-primary">Authenticate</button>
         </form>
 
+    </div>
+
+    <!-- Password Reset Notice Modal -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background:var(--surface-container); border:1px solid rgba(255,255,255,0.1); color:var(--on-surface);">
+                <div class="modal-header border-bottom border-secondary border-opacity-25">
+                    <h5 class="modal-title font-headline d-flex align-items-center gap-2" id="forgotPasswordModalLabel">
+                        <span class="material-symbols-outlined text-warning">info</span>
+                        Password Recovery Notice
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body font-body" style="font-size:0.9rem; line-height:1.6;">
+                    <p>Due to recent email service and database maintenance, automated password reset links are temporarily unavailable.</p>
+                    <p class="text-muted">If you are unable to recall your password during this period, you can quickly create a new operator account to continue accessing problems and practice arenas.</p>
+                </div>
+                <div class="modal-footer border-top border-secondary border-opacity-25">
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-sm">Register New Account</a>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <p class="auth-footer">
