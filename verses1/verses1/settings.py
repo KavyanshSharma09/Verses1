@@ -103,10 +103,13 @@ if DATABASE_URL:
     db_host = default_db.get('HOST')
     if DB_FORCE_IPV4 and isinstance(db_host, str) and db_host and not DEBUG:
         try:
+            prev_timeout = socket.getdefaulttimeout()
+            socket.setdefaulttimeout(2.0)
             ipv4_addr = socket.getaddrinfo(db_host, None, socket.AF_INET, socket.SOCK_STREAM)[0][4][0]
             db_options['hostaddr'] = ipv4_addr
-        except socket.gaierror:
-            # Keep hostname resolution behavior if no IPv4 address is available.
+            socket.setdefaulttimeout(prev_timeout)
+        except Exception:
+            # Keep hostname resolution behavior if no IPv4 address is available or lookup times out.
             pass
 
     DATABASES = {

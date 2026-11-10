@@ -25,12 +25,18 @@ def _paginate(request, queryset, per_page=12):
     page_obj = paginator.get_page(request.GET.get('page'))
     return page_obj, _querystring_without_page(request)
 
+_PROBLEMS_CHECKED = False
+
 def ensure_problems_loaded():
     """Auto-load problems from fixture if the database is currently empty."""
+    global _PROBLEMS_CHECKED
+    if _PROBLEMS_CHECKED:
+        return
     try:
         if not ProblemStatement.objects.filter(is_active=True).exists():
             from django.core.management import call_command
             call_command('sync_problem_catalog', verbosity=0)
+        _PROBLEMS_CHECKED = True
     except Exception as e:
         import logging
         logging.getLogger(__name__).warning("Auto-syncing problem catalog failed: %s", e)
