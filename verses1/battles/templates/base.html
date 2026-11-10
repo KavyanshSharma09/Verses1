@@ -86,57 +86,57 @@
             to { background-position: -20% 0; }
         }
 
-        /* System Maintenance Notice Banner */
+        /* System Maintenance Notice Banner - Grad Black and Text */
         .service-notice-banner {
-            background: linear-gradient(90deg, rgba(245, 158, 11, 0.16) 0%, rgba(15, 23, 42, 0.96) 50%, rgba(0, 218, 243, 0.12) 100%);
-            border-bottom: 1px solid rgba(245, 158, 11, 0.45);
-            backdrop-filter: blur(8px);
+            background: linear-gradient(180deg, #18181b 0%, #0d0d10 50%, #08080a 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(10px);
             position: relative;
             z-index: 100;
         }
         .notice-inner {
-            min-height: 46px;
+            min-height: 48px;
         }
         .notice-pulse-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(245, 158, 11, 0.22);
-            border: 1px solid rgba(245, 158, 11, 0.6);
-            color: #fbbf24;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #f4f4f5;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.62rem;
             font-weight: 700;
             letter-spacing: 0.12em;
-            padding: 0.22rem 0.55rem;
+            padding: 0.22rem 0.6rem;
             border-radius: 2px;
             white-space: nowrap;
         }
         .pulse-dot {
             width: 7px;
             height: 7px;
-            background-color: #f59e0b;
+            background-color: #e4e4e7;
             border-radius: 50%;
             animation: notice-pulse 1.4s ease-in-out infinite;
         }
         @keyframes notice-pulse {
-            0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
-            50% { opacity: 0.4; transform: scale(0.9); box-shadow: 0 0 0 4px rgba(245, 158, 11, 0); }
+            0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5); }
+            50% { opacity: 0.35; transform: scale(0.9); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0); }
         }
         .notice-message {
-            font-size: 0.82rem;
-            color: var(--on-surface, #e2e8f0);
+            font-size: 0.83rem;
+            color: #d4d4d8;
             line-height: 1.45;
         }
         .notice-message strong {
-            color: #fbbf24;
+            color: #ffffff;
         }
-        .btn-outline-cyan {
-            border: 1px solid rgba(0, 218, 243, 0.6);
-            color: var(--primary, #00daf3);
-            background: transparent;
+        .btn-notice-dark {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: linear-gradient(180deg, #27272a 0%, #18181b 100%);
+            color: #ffffff;
             font-size: 0.72rem;
-            padding: 0.25rem 0.65rem;
+            padding: 0.3rem 0.75rem;
             border-radius: 2px;
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 600;
@@ -146,17 +146,17 @@
             transition: all 0.2s ease;
             white-space: nowrap;
         }
-        .btn-outline-cyan:hover {
-            background: rgba(0, 218, 243, 0.15);
-            color: #fff;
-            border-color: var(--primary, #00daf3);
+        .btn-notice-dark:hover {
+            background: linear-gradient(180deg, #3f3f46 0%, #27272a 100%);
+            border-color: rgba(255, 255, 255, 0.4);
+            color: #ffffff;
         }
-        .btn-cyan {
-            background: var(--primary, #00daf3);
-            color: #0b1326;
-            border: 1px solid var(--primary, #00daf3);
+        .btn-notice-light {
+            background: #f4f4f5;
+            color: #09090b;
+            border: 1px solid #f4f4f5;
             font-size: 0.72rem;
-            padding: 0.25rem 0.65rem;
+            padding: 0.3rem 0.75rem;
             border-radius: 2px;
             font-family: 'Space Grotesk', sans-serif;
             font-weight: 700;
@@ -166,14 +166,14 @@
             transition: all 0.2s ease;
             white-space: nowrap;
         }
-        .btn-cyan:hover {
-            background: #00c4dc;
-            color: #000;
+        .btn-notice-light:hover {
+            background: #ffffff;
+            color: #000000;
         }
         .btn-notice-dismiss {
             background: transparent;
             border: none;
-            color: var(--outline, #94a3b8);
+            color: #a1a1aa;
             cursor: pointer;
             padding: 0.25rem;
             display: inline-flex;
@@ -183,35 +183,35 @@
             transition: color 0.2s, background 0.2s;
         }
         .btn-notice-dismiss:hover {
-            color: #fff;
-            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.12);
         }
         .badge-status-pill {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.6rem;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            background: rgba(245, 158, 11, 0.14);
-            border: 1px solid rgba(245, 158, 11, 0.4);
-            color: #fbbf24;
-            padding: 0.2rem 0.55rem;
+            background: linear-gradient(180deg, #27272a 0%, #18181b 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #e4e4e7;
+            padding: 0.22rem 0.55rem;
             border-radius: 12px;
             margin-left: 0.75rem;
             text-decoration: none;
             transition: all 0.2s ease;
         }
         .badge-status-pill:hover {
-            background: rgba(245, 158, 11, 0.25);
-            color: #fff;
+            border-color: rgba(255, 255, 255, 0.35);
+            color: #ffffff;
         }
         .status-dot-amber {
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: #f59e0b;
+            background: #e4e4e7;
         }
     </style>
 </head>
@@ -305,17 +305,16 @@
                 <div class="d-flex align-items-center gap-3">
                     <span class="notice-pulse-badge">
                         <span class="pulse-dot"></span>
-                        DB RECOVERY IN PROGRESS
+                        RECOVERY IN PROCESS
                     </span>
                     <div class="notice-message">
-                        <strong>Notice:</strong> Due to recent email infrastructure changes, the primary Supabase database experienced downtime and is currently being fixed. 
-                        <span>Local Django authentication is active, and all <strong>68+ challenge problems</strong> are available to view and practice.</span>
+                        <strong>Notice:</strong> Database recovery is in process. All <strong>68+ challenge problems are visible</strong>, accessible, and ready to practice.
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2 notice-actions">
-                    <a href="{% url 'problem_list' %}" class="btn-outline-cyan">Browse Problems</a>
+                    <a href="{% url 'problem_list' %}" class="btn-notice-dark">Browse Problems</a>
                     {% if not user.is_authenticated %}
-                    <a href="{% url 'login' %}" class="btn-cyan">Sign In</a>
+                    <a href="{% url 'login' %}" class="btn-notice-light">Sign In</a>
                     {% endif %}
                     <button type="button" class="btn-notice-dismiss ms-2" id="dismissNoticeBtn" title="Dismiss notice" aria-label="Dismiss notice">
                         <span class="material-symbols-outlined" style="font-size:18px;">close</span>

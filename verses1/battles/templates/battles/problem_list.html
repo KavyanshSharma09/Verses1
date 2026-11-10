@@ -274,140 +274,78 @@ html { scroll-behavior: smooth; }
 
     <!-- Problems Table -->
     <div class="problems-table" id="problemsTable">
-        <table>
+        <table style="width:100%; border-collapse:collapse;">
             <thead>
                 <tr>
-                    <th style="width:50px;">ID</th>
+                    <th style="width:70px;">ID</th>
                     <th>Challenge Module</th>
-                    <th>Difficulty</th>
-                    <th>Limits</th>
-                    <th>Status</th>
-                    <th class="text-end">Actions</th>
+                    <th style="width:110px;">Difficulty</th>
+                    <th style="width:140px;">Limits</th>
+                    <th style="width:80px;">Status</th>
+                    <th style="width:160px;" class="text-end">Actions</th>
                 </tr>
             </thead>
+            <tbody id="problemsBody">
+                {% for problem in problems %}
+                <tr data-href="{% url 'problem_detail' problem.slug %}" class="problem-row" onclick="window.location.href='{% url 'problem_detail' problem.slug %}'" style="cursor:pointer;">
+                    <td><span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--outline);">#{{ forloop.counter|stringformat:"03d" }}</span></td>
+                    <td>
+                        <div class="problem-title" style="font-weight:700;color:var(--on-surface);">{{ problem.title }}</div>
+                        <div class="problem-sub" style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--outline);">{{ problem.description|truncatewords:10 }}</div>
+                    </td>
+                    <td>
+                        <span class="diff {{ problem.difficulty }}" style="font-size:0.65rem;font-weight:700;padding:0.2rem 0.5rem;border-radius:2px;text-transform:uppercase;">{{ problem.get_difficulty_display }}</span>
+                    </td>
+                    <td>
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--outline);">{{ problem.time_limit_seconds }}s / {{ problem.memory_limit_mb }}MB</span>
+                    </td>
+                    <td>
+                        {% if problem.id in solved_problems %}
+                        <span class="material-symbols-outlined" style="color:var(--secondary);font-variation-settings:'FILL' 1;font-size:18px;">check_circle</span>
+                        {% else %}
+                        <span class="material-symbols-outlined" style="color:var(--outline-variant);font-size:18px;">play_arrow</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end" onclick="event.stopPropagation();">
+                        <span class="action-stack">
+                            <a href="{% url 'problem_detail' problem.slug %}" class="btn btn-sm btn-outline-primary">View</a>
+                            <a href="{% url 'practice_problem' problem.slug %}" class="btn btn-sm btn-primary">Solve</a>
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4" style="color:var(--outline);">No problems matched the selected filters.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
         </table>
 
-        <div class="virtual-scroll-viewport" id="problemsViewport">
-            <table>
-                <tbody id="virtualProblemsBody"></tbody>
-            </table>
-        </div>
-
         <div class="table-footer">
-            <span class="table-footer-info" id="problemsCountInfo">Showing 0 entries</span>
+            <span class="table-footer-info" id="problemsCountInfo">Showing {{ problems|length }} challenge modules</span>
         </div>
     </div>
 </div>
-{{ problem_rows|json_script:"problemRowsData" }}
 {% endblock %}
 
 {% block extra_js %}
 <script>
 (function () {
-    const rows = JSON.parse(document.getElementById('problemRowsData').textContent || '[]');
-    const viewport = document.getElementById('problemsViewport');
-    const tbody = document.getElementById('virtualProblemsBody');
-    const countInfo = document.getElementById('problemsCountInfo');
+    const tableBody = document.getElementById('problemsBody');
+    if (!tableBody) return;
 
-    const rowHeight = 78;
-    const overscan = 8;
-    const detailUrlTemplate = "{% url 'problem_detail' '__slug__' %}";
-    const duelUrlTemplate = "{% url 'create_battle' %}?problem=__id__";
-
-    function escapeHtml(value) {
-        return String(value || '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/\"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-    }
-
-    function truncateWords(text, wordCount) {
-        const words = String(text || '').trim().split(/\s+/).filter(Boolean);
-        if (words.length <= wordCount) {
-            return words.join(' ');
-        }
-        return `${words.slice(0, wordCount).join(' ')}...`;
-    }
-
-    function rowHtml(problem, index) {
-        const detailUrl = detailUrlTemplate.replace('__slug__', encodeURIComponent(problem.slug));
-        const duelUrl = duelUrlTemplate.replace('__id__', problem.id);
-        const statusHtml = problem.is_solved
-            ? `<span class="material-symbols-outlined" style="color:var(--secondary);font-variation-settings:'FILL' 1;">check_circle</span>`
-            : `<span class="material-symbols-outlined" style="color:var(--outline-variant);">play_arrow</span>`;
-
-        return `
-            <tr data-href="${detailUrl}" class="problem-row">
-                <td><span style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--outline);">#${String(index + 1).padStart(3, '0')}</span></td>
-                <td>
-                    <div class="problem-title">${escapeHtml(problem.title)}</div>
-                    <div class="problem-sub">${escapeHtml(truncateWords(problem.description, 10))}</div>
-                </td>
-                <td><span class="diff ${escapeHtml(problem.difficulty_key)}">${escapeHtml(problem.difficulty)}</span></td>
-                <td><span style="font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--outline);">${escapeHtml(problem.time_limit_seconds)}s / ${escapeHtml(problem.memory_limit_mb)}MB</span></td>
-                <td>${statusHtml}</td>
-                <td class="text-end" onclick="event.stopPropagation();">
-                    <span class="action-stack">
-                        <a href="${detailUrl}" class="btn btn-sm btn-outline-primary">View</a>
-                        <a href="${duelUrl}" class="btn btn-sm btn-primary">Duel</a>
-                    </span>
-                </td>
-            </tr>
-        `;
-    }
-
-    function renderRows() {
-        if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4" style="color:var(--outline);">No problems matched the selected filters.</td></tr>';
-            countInfo.textContent = 'Showing 0 entries';
+    tableBody.addEventListener('click', function (event) {
+        if (event.target.closest('a, button, input, form')) {
             return;
         }
-
-        const viewportHeight = viewport.clientHeight;
-        const scrollTop = viewport.scrollTop;
-        const visibleRows = Math.ceil(viewportHeight / rowHeight);
-
-        const startIndex = Math.max(0, Math.floor(scrollTop / rowHeight) - overscan);
-        const endIndex = Math.min(rows.length, startIndex + visibleRows + overscan * 2);
-
-        const topSpacer = startIndex * rowHeight;
-        const bottomSpacer = (rows.length - endIndex) * rowHeight;
-
-        let html = '';
-        if (topSpacer > 0) {
-            html += `<tr class="virtual-spacer"><td colspan="6" style="height:${topSpacer}px"></td></tr>`;
-        }
-
-        for (let i = startIndex; i < endIndex; i += 1) {
-            html += rowHtml(rows[i], i);
-        }
-
-        if (bottomSpacer > 0) {
-            html += `<tr class="virtual-spacer"><td colspan="6" style="height:${bottomSpacer}px"></td></tr>`;
-        }
-
-        tbody.innerHTML = html;
-        countInfo.textContent = `Showing ${startIndex + 1}-${endIndex} of ${rows.length} entries`;
-    }
-
-    viewport.addEventListener('scroll', renderRows);
-    viewport.addEventListener('click', function (event) {
         const row = event.target.closest('tr.problem-row');
-        if (!row) {
-            return;
-        }
-        if (event.target.closest('a,button,input,form')) {
-            return;
-        }
-        const href = row.getAttribute('data-href');
-        if (href) {
-            window.location.href = href;
+        if (row) {
+            const href = row.getAttribute('data-href');
+            if (href) {
+                window.location.href = href;
+            }
         }
     });
-
-    renderRows();
 })();
 </script>
 {% endblock %}

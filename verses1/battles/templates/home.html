@@ -398,6 +398,45 @@
     </div>
 </section>
 
+<!-- Available Problems Showcase -->
+<section class="available-problems-section my-5">
+    <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+        <div>
+            <div class="eyebrow" style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--primary);text-transform:uppercase;letter-spacing:0.2em;margin-bottom:0.25rem;">Challenge Repository // Active Bank</div>
+            <h2 class="font-headline fw-bold mb-1" style="font-size:1.8rem;color:var(--on-surface);">Available Problem Statements</h2>
+            <p class="text-muted mb-0" style="font-size:0.85rem;">All 68+ challenge problems are visible, active, and open for instant practice.</p>
+        </div>
+        <a href="{% url 'problem_list' %}" class="btn btn-outline-primary btn-sm">Explore All Problems (68+) &rarr;</a>
+    </div>
+
+    <div class="row g-3">
+        {% for problem in featured_problems %}
+        <div class="col-md-6 col-lg-3">
+            <div class="card h-100 p-3" style="background:var(--surface-container);border:1px solid rgba(255,255,255,0.06);border-radius:2px;">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <span class="badge {% if problem.difficulty == 'easy' %}bg-success{% elif problem.difficulty == 'medium' %}bg-warning text-dark{% else %}bg-danger{% endif %} text-uppercase" style="font-size:0.65rem;">
+                        {{ problem.get_difficulty_display }}
+                    </span>
+                    <span style="font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--outline);">{{ problem.time_limit_seconds }}s</span>
+                </div>
+                <h5 class="card-title font-headline fw-bold mb-1" style="font-size:1rem;">
+                    <a href="{% url 'problem_detail' problem.slug %}" style="color:var(--on-surface);text-decoration:none;">{{ problem.title }}</a>
+                </h5>
+                <p class="card-text text-muted mb-3 flex-grow-1" style="font-size:0.78rem;line-height:1.5;">
+                    {{ problem.description|truncatewords:12 }}
+                </p>
+                <div class="d-flex gap-2 mt-auto">
+                    <a href="{% url 'practice_problem' problem.slug %}" class="btn btn-sm btn-primary w-100" style="font-size:0.75rem;">Solve</a>
+                    <a href="{% url 'problem_detail' problem.slug %}" class="btn btn-sm btn-outline-primary w-100" style="font-size:0.75rem;">View</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center text-muted py-4">No problems found.</div>
+        {% endfor %}
+    </div>
+</section>
+
 <!-- Stats Band -->
 <div class="stats-band">
     <div>
