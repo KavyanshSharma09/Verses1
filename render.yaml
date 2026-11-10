@@ -5,7 +5,7 @@ services:
     plan: free
     rootDir: verses1
     buildCommand: bash ./build.sh
-    startCommand: python manage.py migrate && gunicorn verses1.wsgi:application
+    startCommand: python manage.py migrate && python manage.py sync_problem_catalog && gunicorn verses1.wsgi:application
     envVars:
       - key: DJANGO_SECRET_KEY
         generateValue: true

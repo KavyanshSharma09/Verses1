@@ -25,14 +25,27 @@ def _paginate(request, queryset, per_page=12):
     page_obj = paginator.get_page(request.GET.get('page'))
     return page_obj, _querystring_without_page(request)
 
+def ensure_problems_loaded():
+    """Auto-load problems from fixture if the database is currently empty."""
+    try:
+        if not ProblemStatement.objects.filter(is_active=True).exists():
+            from django.core.management import call_command
+            call_command('sync_problem_catalog', verbosity=0)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning("Auto-syncing problem catalog failed: %s", e)
+
+
 def home(request):
+    ensure_problems_loaded()
     # Show available problems on home page
-    problems = ProblemStatement.objects.filter(is_active=True).order_by('difficulty', 'title')[:6]
+    problems = ProblemStatement.objects.filter(is_active=True).order_by('difficulty', 'title')[:8]
     categories = Category.objects.all()[:8]
     return render(request, "home.html", {
         'featured_problems': problems,
         'categories': categories,
     })
+
 
 def register(request):
     if request.method == 'POST':
@@ -50,6 +63,7 @@ def register(request):
 
 def problem_list(request):
     """List all available problems with category filtering"""
+    ensure_problems_loaded()
     category_slug = request.GET.get('category')
     difficulty = request.GET.get('difficulty')
     search_query = request.GET.get('q', '')
@@ -105,6 +119,7 @@ def problem_list(request):
 
 def problem_detail(request, slug):
     """View problem details"""
+    ensure_problems_loaded()
     problem = get_object_or_404(ProblemStatement, slug=slug, is_active=True)
     visible_tests = problem.get_visible_test_cases()
     
@@ -496,6 +511,7 @@ def analyze_code_preview(request):
 
 def practice(request):
     """Practice mode - list problems to solve solo"""
+    ensure_problems_loaded()
     category_slug = request.GET.get('category')
     difficulty = request.GET.get('difficulty')
     search_query = request.GET.get('q', '')
@@ -543,6 +559,7 @@ def practice(request):
 
 def practice_problem(request, slug):
     """Practice a specific problem"""
+    ensure_problems_loaded()
     problem = get_object_or_404(ProblemStatement, slug=slug, is_active=True)
     visible_tests = problem.get_visible_test_cases()
     

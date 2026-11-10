@@ -97,7 +97,8 @@ if DATABASE_URL:
         default_db['NAME'] = os.environ.get('DATABASE_NAME', 'postgres')
 
     db_options = cast(dict[str, Any], default_db.setdefault('OPTIONS', {}))
-    db_options.setdefault('connect_timeout', 10)
+    if 'postgres' in default_db.get('ENGINE', ''):
+        db_options.setdefault('connect_timeout', 10)
 
     db_host = default_db.get('HOST')
     if DB_FORCE_IPV4 and isinstance(db_host, str) and db_host and not DEBUG:
