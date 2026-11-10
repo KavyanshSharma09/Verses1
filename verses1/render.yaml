@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: verses1
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      ./build.sh   # runs sync_problem_catalog before gunicorn
+    startCommand: |
+      # Apply any pending migrations before starting the server
+      python manage.py migrate --noinput
+      gunicorn verses1.wsgi:application --bind 0.0.0.0:10000
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: verses1.settings
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: verses1-db
+
